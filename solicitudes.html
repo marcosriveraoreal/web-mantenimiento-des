@@ -1,0 +1,1041 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Solicitudes — Portal Proveedores</title>
+  <style>
+    :root {
+      --ink:       #0d1c1e;
+      --ink-2:     #3a4f52;
+      --ink-3:     #7a9196;
+      --ink-4:     #b0c4c8;
+      --teal-50:   #f2f8f9;
+      --teal-100:  #e4f0f2;
+      --border:    #dde6e8;
+      --border-2:  #eef2f3;
+      --surface-2: #f7fafa;
+      --shadow-sm: 0 2px 8px rgba(13,28,30,.07), 0 1px 2px rgba(13,28,30,.04);
+      --shadow-md: 0 8px 32px rgba(13,28,30,.11), 0 2px 8px rgba(13,28,30,.05);
+      --shadow-lg: 0 24px 60px rgba(13,28,30,.18), 0 4px 16px rgba(13,28,30,.08);
+      --r-xl: 18px; --r-lg: 13px; --r-md: 9px; --r-sm: 6px;
+      --primary:   #194447;
+      --primary-h: #1f565a;
+      --tertiary:  #eb953f;
+      --ok:        #1BA777; --ok-bg:   rgba(27,167,119,.10); --ok-d:  #0d6b4a;
+      --warn:      #f59e0b; --warn-bg: rgba(245,158,11,.11); --warn-d:#78460d;
+      --info:      #3b82f6; --info-bg: rgba(59,130,246,.10); --info-d:#1e40af;
+      --sidebar-w: 220px;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--teal-50);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      font-size: 13px;
+      color: var(--ink);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ═══ TOPBAR ════════════════════════════════════════════════════════ */
+    .topbar {
+      background: var(--primary);
+      height: 56px;
+      display: flex;
+      align-items: center;
+      padding: 0 20px 0 0;
+      position: sticky; top: 0; z-index: 100;
+      flex-shrink: 0;
+    }
+    .topbar__brand {
+      width: var(--sidebar-w); flex-shrink: 0;
+      display: flex; align-items: center; gap: 10px;
+      padding: 0 20px; height: 100%;
+      border-right: 1px solid rgba(255,255,255,.08);
+    }
+    .topbar__logo { width: 32px; height: 32px; flex-shrink: 0; }
+    .topbar__logo svg { width: 32px; height: 32px; }
+    .topbar__name { font-size: 13px; font-weight: 700; color: #fff; white-space: nowrap; }
+    .topbar__right { flex: 1; display: flex; align-items: center; justify-content: space-between; padding: 0 24px; }
+    .topbar__breadcrumb { display: flex; align-items: center; gap: 6px; }
+    .topbar__breadcrumb span { font-size: 12px; color: rgba(255,255,255,.45); }
+    .topbar__breadcrumb strong { font-size: 12px; color: rgba(255,255,255,.85); font-weight: 600; }
+    .topbar__sep { color: rgba(255,255,255,.2) !important; }
+    .topbar__user { display: flex; align-items: center; gap: 10px; }
+    .company-chip {
+      display: flex; align-items: center; gap: 8px;
+      background: rgba(255,255,255,.09); border: 1px solid rgba(255,255,255,.14);
+      border-radius: 30px; padding: 4px 12px 4px 5px;
+    }
+    .company-chip__av {
+      width: 26px; height: 26px; border-radius: 50%;
+      background: var(--tertiary); color: #fff;
+      font-size: 10px; font-weight: 800;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .company-chip__name { font-size: 13px; font-weight: 600; color: #fff; }
+    .btn-logout {
+      display: flex; align-items: center; gap: 6px;
+      height: 32px; padding: 0 12px;
+      background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.12);
+      border-radius: var(--r-md); color: rgba(255,255,255,.65);
+      font-size: 12px; font-weight: 500; font-family: inherit; cursor: pointer;
+      transition: all .15s;
+    }
+    .btn-logout:hover { background: rgba(255,255,255,.15); color: #fff; }
+    .btn-logout svg { width: 13px; height: 13px; flex-shrink: 0; }
+
+    /* ═══ LAYOUT ════════════════════════════════════════════════════════ */
+    .layout { flex: 1; display: flex; min-height: 0; }
+
+    /* ═══ SIDEBAR ═══════════════════════════════════════════════════════ */
+    .sidebar {
+      width: var(--sidebar-w); flex-shrink: 0;
+      background: #fff; border-right: 1px solid var(--border);
+      display: flex; flex-direction: column;
+      padding: 14px 10px; gap: 2px;
+    }
+    .nav-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .7px; color: var(--ink-4); padding: 8px 10px 6px; }
+    .nav-item {
+      display: flex; align-items: center; gap: 9px;
+      height: 36px; padding: 0 10px;
+      border-radius: var(--r-md); font-size: 13px; font-weight: 500;
+      color: var(--ink-2); cursor: pointer; transition: all .15s;
+      text-decoration: none; border: none; background: none;
+      width: 100%; text-align: left; font-family: inherit;
+    }
+    .nav-item svg { width: 15px; height: 15px; color: var(--ink-3); flex-shrink: 0; transition: color .15s; }
+    .nav-item:hover { background: var(--teal-50); color: var(--primary); }
+    .nav-item:hover svg { color: var(--primary); }
+    .nav-item.active { background: var(--teal-100); color: var(--primary); font-weight: 600; }
+    .nav-item.active svg { color: var(--primary); }
+
+    /* ═══ MAIN ══════════════════════════════════════════════════════════ */
+    .main { flex: 1; overflow-y: auto; min-width: 0; }
+    .main-inner { padding: 28px 32px 48px; }
+
+    /* ═══ PAGE HEADER ════════════════════════════════════════════════════ */
+    .page-header { margin-bottom: 24px; }
+    .page-header__eyebrow {
+      font-size: 11px; font-weight: 600; text-transform: uppercase;
+      letter-spacing: .8px; color: var(--ink-3); margin-bottom: 4px;
+    }
+    .page-header__row { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; }
+    .page-header__title { font-size: 22px; font-weight: 800; color: var(--ink); letter-spacing: -.3px; }
+    .page-header__sub { font-size: 13px; color: var(--ink-3); margin-top: 4px; }
+
+    /* ═══ STAT CARDS ═════════════════════════════════════════════════════ */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+      margin-bottom: 24px;
+    }
+    .stat-card {
+      background: #fff; border-radius: var(--r-lg);
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow-sm);
+      padding: 18px 20px;
+      display: flex; align-items: center; gap: 14px;
+      cursor: pointer; transition: box-shadow .18s, border-color .18s, transform .12s;
+    }
+    .stat-card:hover { box-shadow: var(--shadow-md); border-color: var(--ink-4); transform: translateY(-1px); }
+    .stat-card.active { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(25,68,71,.10), var(--shadow-sm); }
+    .stat-card__icon {
+      width: 42px; height: 42px; border-radius: var(--r-md);
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+    .stat-card__icon svg { width: 20px; height: 20px; }
+    .stat-card__icon--all     { background: rgba(25,68,71,.08);     color: var(--primary); }
+    .stat-card__icon--pending { background: var(--warn-bg);         color: var(--warn-d); }
+    .stat-card__icon--done    { background: var(--ok-bg);           color: var(--ok-d); }
+    .stat-card__body {}
+    .stat-card__value { font-size: 26px; font-weight: 800; color: var(--ink); line-height: 1; letter-spacing: -.5px; }
+    .stat-card__label { font-size: 12px; color: var(--ink-3); margin-top: 3px; font-weight: 500; }
+
+    /* ═══ FILTER BAR ═════════════════════════════════════════════════════ */
+    .filter-bar {
+      display: flex; align-items: center; gap: 10px;
+      margin-bottom: 14px; flex-wrap: wrap;
+    }
+    .search-wrap { position: relative; display: flex; align-items: center; }
+    .search-wrap svg { position: absolute; left: 10px; width: 14px; height: 14px; color: var(--ink-3); pointer-events: none; }
+    .search-input {
+      height: 36px; padding: 0 12px 0 34px;
+      border: 1px solid var(--border); border-radius: var(--r-md);
+      background: #fff; color: var(--ink); font-size: 13px; font-family: inherit;
+      outline: none; transition: border-color .15s, box-shadow .15s;
+      width: 220px;
+    }
+    .search-input::placeholder { color: var(--ink-4); }
+    .search-input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(25,68,71,.09); }
+    .filter-bar__spacer { flex: 1; }
+    .result-count { font-size: 13px; color: var(--ink-3); font-weight: 500; }
+    .result-count strong { color: var(--primary); font-weight: 700; }
+
+    /* ═══ TABLE ══════════════════════════════════════════════════════════ */
+    .table-card {
+      background: #fff; border-radius: var(--r-xl);
+      border: 1px solid var(--border); box-shadow: var(--shadow-sm);
+      overflow: hidden;
+    }
+    table { width: 100%; border-collapse: collapse; }
+    thead th {
+      font-size: 10.5px; font-weight: 700; letter-spacing: .6px;
+      text-transform: uppercase; color: var(--ink-3);
+      padding: 12px 18px; background: #fff;
+      border-bottom: 1.5px solid var(--teal-100);
+      white-space: nowrap; text-align: left;
+    }
+    thead th::before { display: none; }
+    tbody tr { transition: background .1s; }
+    tbody tr:hover td { background: var(--teal-50); }
+    tbody td {
+      padding: 14px 18px; border-bottom: 1px solid var(--border-2);
+      vertical-align: middle;
+    }
+    tbody tr:last-child td { border-bottom: none; }
+
+    /* ═══ CELL TYPES ═════════════════════════════════════════════════════ */
+    .c-num {
+      font-family: 'SF Mono','Fira Code','Consolas',monospace;
+      font-size: 12px; font-weight: 700; color: var(--primary);
+      background: var(--teal-100); border: 1px solid rgba(25,68,71,.12);
+      padding: 3px 9px; border-radius: var(--r-sm);
+      letter-spacing: .3px; white-space: nowrap;
+    }
+    .c-date { font-size: 13px; color: var(--ink-2); white-space: nowrap; font-weight: 500; }
+    .c-date small { display: block; font-size: 11px; color: var(--ink-3); font-weight: 400; margin-top: 1px; }
+    .tag-list { display: flex; flex-wrap: wrap; gap: 4px; }
+    .tag {
+      display: inline-block; font-size: 11px; font-weight: 500;
+      background: var(--teal-100); color: var(--primary);
+      border-radius: 8px; padding: 2px 8px; white-space: nowrap;
+    }
+    .c-number { font-size: 15px; font-weight: 700; color: var(--ink); }
+    .c-number small { display: block; font-size: 11px; color: var(--ink-3); font-weight: 400; margin-top: 1px; }
+    .c-number--ok { color: var(--ok-d); }
+    .c-number--dim { color: var(--ink-4); }
+    .c-empty { color: var(--ink-4); font-style: italic; font-size: 12px; }
+
+
+    /* ═══ BADGES ═════════════════════════════════════════════════════════ */
+    .badge {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 4px 10px; border-radius: 20px;
+      font-size: 11px; font-weight: 600; white-space: nowrap;
+    }
+    .badge::before {
+      content: ''; width: 5px; height: 5px; border-radius: 50%;
+      flex-shrink: 0; display: inline-block;
+    }
+    .badge-pending  { background: var(--warn-bg); color: var(--warn-d); }
+    .badge-pending::before  { background: var(--warn); }
+    .badge-partial  { background: var(--info-bg); color: var(--info-d); }
+    .badge-partial::before  { background: var(--info); }
+    .badge-confirmed { background: var(--ok-bg); color: var(--ok-d); }
+    .badge-confirmed::before { background: var(--ok); }
+    .real-input {
+      width: 72px; height: 38px; padding: 0 8px;
+      border: 1.5px solid var(--border); border-radius: var(--r-md);
+      background: var(--surface-2); color: var(--ink);
+      font-size: 15px; font-weight: 700; font-family: inherit;
+      text-align: center; outline: none;
+      transition: border-color .15s, box-shadow .15s, background .15s;
+    }
+    .real-input:hover { border-color: var(--ink-4); background: #fff; }
+    .real-input:focus { border-color: var(--ok-d); background: #fff; box-shadow: 0 0 0 3px rgba(27,167,119,.10); }
+    /* ═══ ACTION BUTTON ══════════════════════════════════════════════════ */
+    .btn-respond {
+      display: inline-flex; align-items: center; gap: 6px;
+      height: 32px; padding: 0 14px; border-radius: var(--r-md);
+      border: 1.5px solid var(--primary); background: transparent;
+      color: var(--primary); font-size: 12px; font-weight: 600;
+      font-family: inherit; cursor: pointer; transition: all .15s;
+      white-space: nowrap;
+    }
+    .btn-respond:hover { background: var(--primary); color: #fff; box-shadow: 0 3px 10px rgba(25,68,71,.2); }
+    .btn-respond svg { width: 12px; height: 12px; flex-shrink: 0; }
+    .btn-respond--done {
+      border-color: var(--ok-d); color: var(--ok-d); cursor: default;
+      background: var(--ok-bg); pointer-events: none;
+    }
+
+    /* ═══ EMPTY STATE ════════════════════════════════════════════════════ */
+    .empty-state { text-align: center; padding: 64px 32px; }
+    .empty-state__icon {
+      width: 60px; height: 60px; border-radius: var(--r-lg);
+      background: var(--teal-100); color: var(--primary);
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 18px;
+    }
+    .empty-state__icon svg { width: 28px; height: 28px; }
+    .empty-state h3 { font-size: 15px; font-weight: 700; color: var(--ink-2); margin-bottom: 6px; }
+    .empty-state p { font-size: 13px; color: var(--ink-3); line-height: 1.6; }
+
+    /* ═══ MODAL ══════════════════════════════════════════════════════════ */
+    .modal-overlay {
+      position: fixed; inset: 0;
+      background: rgba(13,28,30,.5);
+      display: flex; align-items: center; justify-content: center;
+      z-index: 200; opacity: 0; pointer-events: none;
+      transition: opacity .2s; backdrop-filter: blur(4px);
+      padding: 20px;
+    }
+    .modal-overlay.open { opacity: 1; pointer-events: auto; }
+    .modal {
+      background: #fff; border-radius: var(--r-xl);
+      width: 100%; max-width: 760px; max-height: 92vh;
+      display: flex; flex-direction: column;
+      box-shadow: var(--shadow-lg); border: 1px solid var(--border);
+      transform: translateY(-16px) scale(.97);
+      transition: transform .25s cubic-bezier(.16,1,.3,1);
+      overflow: hidden;
+    }
+    .modal-overlay.open .modal { transform: translateY(0) scale(1); }
+
+    /* Modal header */
+    .modal-header {
+      padding: 24px 28px 20px;
+      border-bottom: 1px solid var(--border-2);
+      flex-shrink: 0;
+      background: #fff;
+    }
+    .modal-header__top {
+      display: flex; align-items: flex-start; justify-content: space-between;
+      margin-bottom: 16px;
+    }
+    .modal-header__badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: var(--teal-100); color: var(--primary);
+      font-size: 10px; font-weight: 700; letter-spacing: .6px;
+      text-transform: uppercase; padding: 3px 10px; border-radius: var(--r-sm);
+      margin-bottom: 6px;
+    }
+    .modal-header__title { font-size: 20px; font-weight: 800; color: var(--ink); letter-spacing: -.3px; }
+    .modal-close {
+      width: 32px; height: 32px; border-radius: var(--r-sm);
+      background: var(--surface-2); border: 1px solid var(--border-2);
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; transition: all .15s; flex-shrink: 0; color: var(--ink-3);
+    }
+    .modal-close:hover { background: #fee2e2; border-color: #fca5a5; color: #dc2626; }
+    .modal-close svg { width: 14px; height: 14px; }
+
+    /* Meta grid */
+    .meta-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1px;
+      background: var(--border-2);
+      border: 1px solid var(--border-2);
+      border-radius: var(--r-md);
+      overflow: hidden;
+    }
+    .meta-item {
+      background: var(--surface-2);
+      padding: 10px 14px;
+      display: flex; flex-direction: column; gap: 2px;
+    }
+    .meta-item__label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .6px; color: var(--ink-4); }
+    .meta-item__value { font-size: 13px; font-weight: 600; color: var(--ink-2); }
+    .meta-item--obs { grid-column: span 4; }
+
+    /* Modal body */
+    .modal-body { flex: 1; overflow-y: auto; padding: 22px 28px; }
+
+    /* Info callout */
+    .info-callout {
+      display: flex; gap: 12px; align-items: flex-start;
+      background: rgba(25,68,71,.04); border: 1px solid rgba(25,68,71,.10);
+      border-left: 3px solid var(--primary);
+      border-radius: var(--r-md); padding: 12px 16px; margin-bottom: 20px;
+    }
+    .info-callout__icon {
+      width: 30px; height: 30px; border-radius: var(--r-sm);
+      background: rgba(25,68,71,.10); color: var(--primary);
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+    .info-callout__icon svg { width: 15px; height: 15px; }
+    .info-callout__title { font-size: 13px; font-weight: 700; color: var(--primary); margin-bottom: 2px; }
+    .info-callout__text { font-size: 12px; color: var(--ink-3); line-height: 1.5; }
+
+    /* Lines section label */
+    .section-label {
+      font-size: 11px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: .7px; color: var(--ink-3); margin-bottom: 10px;
+    }
+
+    /* Response table */
+    .resp-table-wrap {
+      border: 1px solid var(--border); border-radius: var(--r-lg); overflow: hidden;
+      box-shadow: var(--shadow-sm);
+    }
+    .resp-table { width: 100%; border-collapse: collapse; }
+    .resp-table thead th {
+      font-size: 10px; font-weight: 700; letter-spacing: .6px; text-transform: uppercase;
+      color: var(--ink-3); padding: 10px 14px; background: var(--surface-2);
+      border-bottom: 1px solid var(--border); white-space: nowrap;
+    }
+    .resp-table tbody td { padding: 11px 14px; border-bottom: 1px solid var(--border-2); vertical-align: middle; }
+    .resp-table tbody tr:last-child td { border-bottom: none; }
+    .resp-table tbody tr:hover td { background: var(--teal-50); }
+
+    .line-num {
+      width: 24px; height: 24px; border-radius: 6px;
+      background: var(--primary); color: #fff;
+      font-size: 11px; font-weight: 700;
+      display: inline-flex; align-items: center; justify-content: center;
+    }
+    .line-date { font-size: 13px; font-weight: 500; color: var(--ink-2); white-space: nowrap; }
+    .line-turno { font-size: 12px; color: var(--ink-2); white-space: nowrap; }
+    .line-zona { font-size: 12px; color: var(--ink-2); }
+    .line-cat { font-size: 12px; color: var(--ink-3); }
+
+    .sol-cell { font-size: 15px; font-weight: 700; color: var(--ink); text-align: center; }
+
+    /* Confirmado input */
+    .conf-wrap { display: flex; flex-direction: column; align-items: center; gap: 3px; }
+    .conf-input {
+      width: 72px; height: 38px; padding: 0 8px;
+      border: 1.5px solid var(--border); border-radius: var(--r-md);
+      background: var(--surface-2); color: var(--ink);
+      font-size: 15px; font-weight: 700; font-family: inherit;
+      text-align: center; outline: none;
+      transition: border-color .15s, box-shadow .15s, background .15s;
+    }
+    .conf-input:hover { border-color: var(--ink-4); background: #fff; }
+    .conf-input:focus { border-color: var(--primary); background: #fff; box-shadow: 0 0 0 3px rgba(25,68,71,.10); }
+    .conf-input.over  { border-color: #ef4444; background: #fff5f5; box-shadow: 0 0 0 3px rgba(239,68,68,.10); }
+    .over-hint { font-size: 10px; color: #dc2626; font-weight: 600; display: none; }
+    .over-hint.show { display: block; }
+
+    /* ═══ MODAL FOOTER ═══════════════════════════════════════════════════ */
+    .modal-footer {
+      padding: 16px 28px;
+      border-top: 1px solid var(--border-2);
+      background: var(--surface-2);
+      display: flex; align-items: center; justify-content: space-between;
+      flex-shrink: 0; gap: 12px;
+    }
+    .modal-footer__summary { display: flex; flex-direction: column; gap: 4px; }
+    .modal-footer__label { font-size: 11px; color: var(--ink-3); font-weight: 500; }
+    .modal-footer__numbers { display: flex; align-items: center; gap: 6px; }
+    .modal-footer__confirmed { font-size: 18px; font-weight: 800; color: var(--primary); line-height: 1; }
+    .modal-footer__of { font-size: 12px; color: var(--ink-3); }
+    .modal-footer__total { font-size: 16px; font-weight: 700; color: var(--ink-3); line-height: 1; }
+    .modal-footer__actions { display: flex; gap: 10px; align-items: center; }
+
+    .btn-cancel {
+      display: inline-flex; align-items: center; gap: 6px;
+      height: 40px; padding: 0 18px;
+      border-radius: var(--r-md); border: 1px solid var(--border);
+      background: #fff; color: var(--ink-2);
+      font-size: 13px; font-weight: 500; font-family: inherit; cursor: pointer;
+      transition: all .15s;
+    }
+    .btn-cancel:hover { background: var(--teal-50); border-color: var(--primary); color: var(--primary); }
+
+    .btn-save {
+      display: inline-flex; align-items: center; gap: 8px;
+      height: 40px; padding: 0 22px;
+      border-radius: var(--r-md); border: none;
+      background: var(--primary); color: #fff;
+      font-size: 13px; font-weight: 600; font-family: inherit; cursor: pointer;
+      transition: background .18s, transform .1s, box-shadow .18s;
+      letter-spacing: .1px;
+    }
+    .btn-save:hover { background: var(--primary-h); box-shadow: 0 4px 16px rgba(25,68,71,.28); }
+    .btn-save:active { transform: scale(.98); }
+    .btn-save svg { width: 16px; height: 16px; }
+
+    /* ═══ TOAST ══════════════════════════════════════════════════════════ */
+    .toast {
+      position: fixed; bottom: 24px; right: 24px;
+      background: #fff; color: var(--ink);
+      padding: 13px 18px; border-radius: var(--r-lg);
+      font-size: 13px; font-weight: 500;
+      box-shadow: var(--shadow-lg); border: 1px solid var(--border);
+      border-left: 3px solid var(--ok);
+      display: flex; align-items: center; gap: 12px;
+      min-width: 290px; max-width: 380px;
+      opacity: 0; transform: translateY(12px) scale(.97);
+      transition: opacity .22s, transform .22s; z-index: 400;
+    }
+    .toast.show { opacity: 1; transform: translateY(0) scale(1); }
+    .toast.toast--error { border-left-color: #ef4444; }
+    .toast.toast--warn  { border-left-color: var(--warn); }
+    .toast__icon {
+      width: 28px; height: 28px; border-radius: var(--r-sm);
+      background: var(--ok-bg); color: var(--ok);
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+    .toast--error .toast__icon { background: rgba(239,68,68,.1); color: #dc2626; }
+    .toast--warn  .toast__icon { background: var(--warn-bg); color: var(--warn-d); }
+    .toast__icon svg { width: 15px; height: 15px; }
+    .toast__text { flex: 1; line-height: 1.4; }
+
+    /* ═══ RESPONSIVE ═════════════════════════════════════════════════════ */
+    @media (max-width: 900px) {
+      .stats-grid { grid-template-columns: 1fr 1fr; }
+      .stats-grid .stat-card:last-child { grid-column: span 2; }
+      .meta-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── Topbar ──────────────────────────────────────────────────────────── -->
+<header class="topbar">
+  <div class="topbar__brand">
+    <div class="topbar__logo">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 50 50">
+        <defs><style>.i0{fill:#fff}</style></defs>
+        <path class="i0" d="M23.77,30.47l-8.22,6.82,6.25-1.21,1.96-5.6h.01Z"/>
+        <path class="i0" d="M22.82,36.21l4.56,3.17-2.55-8.89-2.01,5.72Z"/>
+        <path class="i0" d="M9.14,34.13l4.62,3.32,8.85-7.34-13.48,4.03h0Z"/>
+        <path class="i0" d="M25.81,30.45l2.7,9.38,5.41-1.33-8.1-8.04h-.01Z"/>
+        <path class="i0" d="M26.65,29.89l8.36,8.3,5.61-4.16-13.96-4.13h-.01Z"/>
+        <path class="i0" d="M24.3,10.18l-15.35,22.87,15.35-4.58V10.18Z"/>
+        <path class="i0" d="M25.63,28.46l15.42,4.56-15.42-22.85s0,18.29,0,18.29Z"/>
+      </svg>
+    </div>
+    <span class="topbar__name">Atalaya Mining</span>
+  </div>
+  <div class="topbar__right">
+    <div class="topbar__breadcrumb">
+      <span>Portal</span>
+      <span class="topbar__sep">/</span>
+      <strong>Solicitudes de personal</strong>
+    </div>
+    <div class="topbar__user">
+      <div class="company-chip">
+        <div class="company-chip__av" id="companyAv">--</div>
+        <span class="company-chip__name" id="companyName">Empresa</span>
+      </div>
+      <button class="btn-logout" id="btnLogout">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+          <polyline points="16 17 21 12 16 7"/>
+          <line x1="21" y1="12" x2="9" y2="12"/>
+        </svg>
+        Cerrar sesión
+      </button>
+    </div>
+  </div>
+</header>
+
+<!-- ── Layout ─────────────────────────────────────────────────────────── -->
+<div class="layout">
+
+  <nav class="sidebar">
+    <span class="nav-label">Menú</span>
+    <a class="nav-item active" href="solicitudes.html">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+        <polyline points="14 2 14 8 20 8"/>
+        <line x1="12" y1="18" x2="12" y2="12"/>
+        <line x1="9" y1="15" x2="15" y2="15"/>
+      </svg>
+      Solicitudes
+    </a>
+  </nav>
+
+  <main class="main">
+    <div class="main-inner">
+
+      <!-- Page header -->
+      <div class="page-header">
+        <p class="page-header__eyebrow">Portal de proveedores</p>
+        <div class="page-header__row">
+          <div>
+            <h1 class="page-header__title">Solicitudes de personal</h1>
+            <p class="page-header__sub">Confirma el personal disponible para cada solicitud de Atalaya Mining.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Stat cards -->
+      <div class="stats-grid">
+        <div class="stat-card active" data-filter="all" id="card-all">
+          <div class="stat-card__icon stat-card__icon--all">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
+              <rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
+            </svg>
+          </div>
+          <div class="stat-card__body">
+            <div class="stat-card__value" id="stat-all">0</div>
+            <div class="stat-card__label">Todas las solicitudes</div>
+          </div>
+        </div>
+        <div class="stat-card" data-filter="pending" id="card-pending">
+          <div class="stat-card__icon stat-card__icon--pending">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"/>
+              <polyline points="12 6 12 12 16 14"/>
+            </svg>
+          </div>
+          <div class="stat-card__body">
+            <div class="stat-card__value" id="stat-pending">0</div>
+            <div class="stat-card__label">Pendientes de respuesta</div>
+          </div>
+        </div>
+        <div class="stat-card" data-filter="confirmed" id="card-confirmed">
+          <div class="stat-card__icon stat-card__icon--done">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+              <polyline points="22 4 12 14.01 9 11.01"/>
+            </svg>
+          </div>
+          <div class="stat-card__body">
+            <div class="stat-card__value" id="stat-confirmed">0</div>
+            <div class="stat-card__label">Confirmadas</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Filter bar -->
+      <div class="filter-bar">
+        <div class="search-wrap">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+          </svg>
+          <input class="search-input" id="searchInput" type="text" placeholder="Buscar por nº solicitud…" />
+        </div>
+        <div class="filter-bar__spacer"></div>
+        <span class="result-count" id="resultCount"><strong>0</strong> solicitudes</span>
+      </div>
+
+      <!-- Table -->
+      <div class="table-card">
+        <table>
+          <thead>
+            <tr>
+              <th>Nº Solicitud</th>
+              <th>Fechas</th>
+              <th>Turnos</th>
+              <th>Zonas</th>
+              <th>Personal</th>
+              <th>Estado</th>
+              <th style="text-align:center; padding-right:22px">Acción</th>
+            </tr>
+          </thead>
+          <tbody id="tableBody"></tbody>
+        </table>
+      </div>
+
+    </div>
+  </main>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════════════
+     MODAL DE RESPUESTA
+     ════════════════════════════════════════════════════════════════════ -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+
+    <div class="modal-header">
+      <div class="modal-header__top">
+        <div>
+          <div class="modal-header__badge">
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4z"/></svg>
+            Formulario de respuesta
+          </div>
+          <h2 class="modal-header__title" id="modalTitle">SOL-0001</h2>
+        </div>
+        <button class="modal-close" id="btnClose" aria-label="Cerrar">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+      </div>
+      <div class="meta-grid" id="metaGrid"></div>
+    </div>
+
+    <div class="modal-body">
+      <div class="info-callout">
+        <div class="info-callout__icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+          </svg>
+        </div>
+        <div>
+          <p class="info-callout__title">Confirma el personal disponible</p>
+          <p class="info-callout__text">Introduce cuántas personas podéis enviar en cada línea. El valor confirmado no puede superar el número solicitado por Atalaya Mining.</p>
+        </div>
+      </div>
+
+      <p class="section-label">Líneas de la solicitud</p>
+
+      <div class="resp-table-wrap">
+        <table class="resp-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Fecha</th>
+              <th>Turno</th>
+              <th>Zona</th>
+              <th>Categoría</th>
+              <th style="text-align:center">Sol.</th>
+              <th style="text-align:center">Conf.</th>
+              <th style="text-align:center">Real</th>
+            </tr>
+          </thead>
+          <tbody id="modalLines"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <div class="modal-footer__summary">
+        <span class="modal-footer__label">Total confirmado</span>
+        <div class="modal-footer__numbers">
+          <span class="modal-footer__confirmed" id="footerConfirmed">0</span>
+          <span class="modal-footer__of">de</span>
+          <span class="modal-footer__total" id="footerTotal">0</span>
+          <span class="modal-footer__of">personas</span>
+        </div>
+      </div>
+      <div class="modal-footer__actions">
+        <button class="btn-cancel" id="btnCancel">Cerrar</button>
+        <button class="btn-save" id="btnSave">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="20 6 9 17 4 12"/>
+          </svg>
+          Guardar respuesta
+        </button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast">
+  <div class="toast__icon">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      <polyline points="20 6 9 17 4 12"/>
+    </svg>
+  </div>
+  <span class="toast__text" id="toastText">Acción completada</span>
+</div>
+
+<script>
+/* ══ Sesión ═══════════════════════════════════════════════════════════ */
+const session = JSON.parse(sessionStorage.getItem('atalaya_session') || 'null');
+if (!session) location.replace('login.html');
+
+const COMPANY  = session.company;
+const INITIALS = COMPANY.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
+document.getElementById('companyAv').textContent   = INITIALS;
+document.getElementById('companyName').textContent = COMPANY;
+document.title = COMPANY + ' — Solicitudes';
+
+document.getElementById('btnLogout').addEventListener('click', () => {
+  sessionStorage.removeItem('atalaya_session');
+  location.replace('login.html');
+});
+
+/* ══ Data helpers ══════════════════════════════════════════════════════ */
+const LS_KEY = 'sdi_solicitudes';
+
+const load  = () => { try { return JSON.parse(localStorage.getItem(LS_KEY) || '[]'); } catch { return []; } };
+const save  = d  => localStorage.setItem(LS_KEY, JSON.stringify(d));
+
+const myFilas  = rec => (rec.filas || []).filter(f => f.suministrador === COMPANY);
+const totalSol = arr => arr.reduce((a, f) => a + (f.solicitado || 0), 0);
+const totalCon = arr => arr.reduce((a, f) => a + (f.contrata   || 0), 0);
+
+function status(filas) {
+  const sol = totalSol(filas), con = totalCon(filas);
+  if (con === 0)        return 'pending';
+  if (con >= sol)       return 'confirmed';
+  return 'partial';
+}
+
+const STATUS_MAP = {
+  pending:   ['badge-pending',   'Pendiente'],
+  partial:   ['badge-partial',   'Parcial'],
+  confirmed: ['badge-confirmed', 'Confirmada'],
+};
+
+const fmt = iso => iso ? new Date(iso + 'T12:00').toLocaleDateString('es-ES', { day: 'numeric', month: 'short' }) : '—';
+
+function dateRange(filas) {
+  const dates = [...new Set(filas.map(f => f.fecha).filter(Boolean))].sort();
+  if (!dates.length) return { main: '—', sub: '' };
+  if (dates.length === 1) return { main: fmt(dates[0]), sub: new Date(dates[0] + 'T12:00').getFullYear() };
+  return { main: `${fmt(dates[0])} – ${fmt(dates[dates.length - 1])}`, sub: '' };
+}
+
+/* ══ State ═════════════════════════════════════════════════════════════ */
+let activeFilter = 'all';
+let activeSearch = '';
+let activeRecId  = null;
+
+/* ══ Render ════════════════════════════════════════════════════════════ */
+function getRows() {
+  return load()
+    .map(r => ({ r, filas: myFilas(r) }))
+    .filter(({ filas }) => filas.length > 0);
+}
+
+function renderStats(rows) {
+  const counts = { all: rows.length, pending: 0, partial: 0, confirmed: 0 };
+  rows.forEach(({ filas }) => counts[status(filas)]++);
+  document.getElementById('stat-all').textContent       = counts.all;
+  document.getElementById('stat-pending').textContent   = counts.pending + counts.partial;
+  document.getElementById('stat-confirmed').textContent = counts.confirmed;
+}
+
+function applyFilters(rows) {
+  return rows.filter(({ r, filas }) => {
+    const s = status(filas);
+    const matchFilter =
+      activeFilter === 'all' ? true :
+      activeFilter === 'pending' ? (s === 'pending' || s === 'partial') :
+      s === activeFilter;
+    const numStr = String(r.numero_solicitud || r.id).padStart(4, '0');
+    const matchSearch = !activeSearch || numStr.includes(activeSearch.replace(/\D/g, ''));
+    return matchFilter && matchSearch;
+  });
+}
+
+function renderTable() {
+  const all      = getRows();
+  renderStats(all);
+  const filtered = applyFilters(all);
+
+  document.getElementById('resultCount').innerHTML =
+    `<strong>${filtered.length}</strong> solicitud${filtered.length !== 1 ? 'es' : ''}`;
+
+  const tbody = document.getElementById('tableBody');
+
+  if (!filtered.length) {
+    tbody.innerHTML = `<tr><td colspan="8"><div class="empty-state">
+      <div class="empty-state__icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+          <polyline points="14 2 14 8 20 8"/>
+        </svg>
+      </div>
+      <h3>${activeFilter !== 'all' || activeSearch ? 'Sin resultados' : 'Aún no hay solicitudes'}</h3>
+      <p>${activeFilter !== 'all' || activeSearch
+        ? 'Prueba a cambiar el filtro o la búsqueda.'
+        : 'Cuando Atalaya Mining cree solicitudes para ' + COMPANY + ',<br>aparecerán aquí para que puedas confirmarlas.'}</p>
+    </div></td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = filtered.map(({ r, filas }) => {
+    const sol   = totalSol(filas);
+    const con   = totalCon(filas);
+    const st    = status(filas);
+    const [badgeCls, badgeTxt] = STATUS_MAP[st];
+    const { main: dateMain, sub: dateSub } = dateRange(filas);
+    const turnos = [...new Set(filas.map(f => f.turno).filter(Boolean))];
+    const zonas  = [...new Set(filas.map(f => f.zona).filter(Boolean))];
+    const numStr = String(r.numero_solicitud || r.id).padStart(4, '0');
+
+    return `<tr>
+      <td><span class="c-num">SOL-${numStr}</span></td>
+      <td>
+        <span class="c-date">${dateMain}${dateSub ? `<small>${dateSub}</small>` : ''}</span>
+      </td>
+      <td>
+        <div class="tag-list">${turnos.length
+          ? turnos.map(t => `<span class="tag">${t}</span>`).join('')
+          : '<span class="c-empty">—</span>'}</div>
+      </td>
+      <td>
+        <div class="tag-list">${zonas.length
+          ? zonas.map(z => `<span class="tag">${z}</span>`).join('')
+          : '<span class="c-empty">—</span>'}</div>
+      </td>
+      <td>
+        <span class="c-number">${sol}<small>${filas.length} línea${filas.length !== 1 ? 's' : ''}</small></span>
+      </td>
+      <td><span class="badge ${badgeCls}">${badgeTxt}</span></td>
+      <td style="text-align:center; padding-right:22px">
+        ${st === 'confirmed'
+          ? `<button class="btn-respond btn-respond--done" disabled>
+               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="12" height="12"><polyline points="20 6 9 17 4 12"/></svg>
+               Confirmada
+             </button>`
+          : `<button class="btn-respond" data-id="${r.id}">
+               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4z"/></svg>
+               Responder
+             </button>`
+        }
+      </td>
+    </tr>`;
+  }).join('');
+
+  document.querySelectorAll('.btn-respond[data-id]').forEach(btn =>
+    btn.addEventListener('click', () => openModal(+btn.dataset.id))
+  );
+}
+
+/* ══ Stat card filter ══════════════════════════════════════════════════ */
+document.querySelectorAll('.stat-card[data-filter]').forEach(card => {
+  card.addEventListener('click', () => {
+    activeFilter = card.dataset.filter;
+    document.querySelectorAll('.stat-card').forEach(c => c.classList.remove('active'));
+    card.classList.add('active');
+    renderTable();
+  });
+});
+
+document.getElementById('searchInput').addEventListener('input', e => {
+  activeSearch = e.target.value.trim();
+  renderTable();
+});
+
+/* ══ Modal ═════════════════════════════════════════════════════════════ */
+function openModal(id) {
+  const records = load();
+  const rec     = records.find(r => r.id === id);
+  if (!rec) return;
+
+  activeRecId = id;
+  const filas = myFilas(rec);
+  const sol   = totalSol(filas);
+  const { main: dateMain } = dateRange(filas);
+  const numStr = String(rec.numero_solicitud || rec.id).padStart(4, '0');
+
+  document.getElementById('modalTitle').textContent = `SOL-${numStr}`;
+
+  const metaItems = [
+    ['Empresa',   COMPANY],
+    ['Fechas',    dateMain],
+    ['Líneas',    `${filas.length} línea${filas.length !== 1 ? 's' : ''}`],
+    ['Solicitado',`${sol} persona${sol !== 1 ? 's' : ''}`],
+  ];
+  if (rec.observaciones_generales) {
+    metaItems.push(['Observaciones', rec.observaciones_generales, true]);
+  }
+  document.getElementById('metaGrid').innerHTML = metaItems.map(([lbl, val, wide]) =>
+    `<div class="meta-item${wide ? ' meta-item--obs' : ''}">
+      <span class="meta-item__label">${lbl}</span>
+      <span class="meta-item__value">${val}</span>
+    </div>`
+  ).join('');
+
+  document.getElementById('modalLines').innerHTML = filas.map((f, i) =>
+    `<tr data-idx="${i}">
+      <td><span class="line-num">${i + 1}</span></td>
+      <td><span class="line-date">${fmt(f.fecha)}</span></td>
+      <td><span class="line-turno">${f.turno || '—'}</span></td>
+      <td><span class="line-zona">${f.zona || '—'}</span></td>
+      <td><span class="line-cat">${f.categoria || '—'}</span></td>
+      <td class="sol-cell">${f.solicitado || 0}</td>
+      <td style="text-align:center">
+        <div class="conf-wrap">
+          <input class="conf-input" type="number" min="0" max="${f.solicitado || 0}"
+            value="${f.contrata || 0}"
+            data-max="${f.solicitado || 0}"
+            data-idx="${i}" />
+          <span class="over-hint" id="hint-${i}">Excede lo solicitado</span>
+        </div>
+      </td>
+      <td style="text-align:center">
+        <input class="real-input" type="number" min="0"
+          value="${f.real || 0}"
+          data-idx="${i}" />
+      </td>
+    </tr>`
+  ).join('');
+
+  document.querySelectorAll('.conf-input').forEach(inp =>
+    inp.addEventListener('input', () => { validateInput(inp); updateFooter(); })
+  );
+
+  updateFooter();
+  document.getElementById('modalOverlay').classList.add('open');
+  document.getElementById('modalLines').querySelector('.conf-input')?.focus();
+}
+
+function validateInput(inp) {
+  const over = (parseInt(inp.value) || 0) > (parseInt(inp.dataset.max) || 0);
+  inp.classList.toggle('over', over);
+  const hint = document.getElementById(`hint-${inp.dataset.idx}`);
+  if (hint) hint.classList.toggle('show', over);
+}
+
+function updateFooter() {
+  let con = 0, sol = 0;
+  document.querySelectorAll('.conf-input').forEach(inp => {
+    con += parseInt(inp.value) || 0;
+    sol += parseInt(inp.dataset.max) || 0;
+  });
+  document.getElementById('footerConfirmed').textContent = con;
+  document.getElementById('footerTotal').textContent     = sol;
+}
+
+function closeModal() {
+  document.getElementById('modalOverlay').classList.remove('open');
+  activeRecId = null;
+}
+
+function saveModal() {
+  if (document.querySelector('.conf-input.over')) {
+    toast('Corrige los valores que superan el nº solicitado.', 'error');
+    return;
+  }
+  const records = load();
+  const recIdx  = records.findIndex(r => r.id === activeRecId);
+  if (recIdx === -1) return;
+
+  let lineIdx = 0;
+  records[recIdx].filas.forEach(f => {
+    if (f.suministrador !== COMPANY) return;
+    const inp  = document.querySelector(`.conf-input[data-idx="${lineIdx}"]`);
+    const rInp = document.querySelector(`.real-input[data-idx="${lineIdx}"]`);
+    if (inp)  f.contrata = parseInt(inp.value)  || 0;
+    if (rInp) f.real     = parseInt(rInp.value) || 0;
+    lineIdx++;
+  });
+
+  save(records);
+  closeModal();
+  renderTable();
+  toast('Respuesta guardada correctamente.', 'ok');
+}
+
+document.getElementById('btnClose').addEventListener('click', closeModal);
+document.getElementById('btnCancel').addEventListener('click', closeModal);
+document.getElementById('btnSave').addEventListener('click', saveModal);
+document.getElementById('modalOverlay').addEventListener('click', e => {
+  if (e.target === document.getElementById('modalOverlay')) closeModal();
+});
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') closeModal();
+  if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') saveModal();
+});
+
+/* ══ Toast ═════════════════════════════════════════════════════════════ */
+let toastTimer;
+function toast(msg, type = 'ok', ms = 3500) {
+  const el  = document.getElementById('toast');
+  const svg = el.querySelector('svg');
+  el.className = 'toast' + (type !== 'ok' ? ` toast--${type}` : '');
+  svg.innerHTML =
+    type === 'ok'    ? '<polyline points="20 6 9 17 4 12"/>' :
+    type === 'warn'  ? '<line x1="12" y1="8" x2="12" y2="12"/><circle cx="12" cy="16" r="1" fill="currentColor"/>' :
+                       '<line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>';
+  document.getElementById('toastText').textContent = msg;
+  el.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove('show'), ms);
+}
+
+/* ══ Init ══════════════════════════════════════════════════════════════ */
+renderTable();
+</script>
+</body>
+</html>

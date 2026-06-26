@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Portal Proveedores — Atalaya Mining</title>
+  <style>
+    /* ── Design Tokens ─────────────────────────────────────────────── */
+    :root {
+      --ink:       #0d1c1e;
+      --ink-2:     #3a4f52;
+      --ink-3:     #7a9196;
+      --ink-4:     #b0c4c8;
+      --teal-50:   #f2f8f9;
+      --teal-100:  #e4f0f2;
+      --border:    #dde6e8;
+      --border-2:  #eef2f3;
+      --surface-2: #f7fafa;
+      --shadow-sm: 0 2px 8px rgba(13,28,30,.08), 0 1px 2px rgba(13,28,30,.04);
+      --shadow-md: 0 8px 32px rgba(13,28,30,.12), 0 2px 8px rgba(13,28,30,.06);
+      --r-xl: 18px;
+      --r-lg: 13px;
+      --r-md:  9px;
+      --r-sm:  6px;
+      --primary:  #194447;
+      --primary-hover: #1f565a;
+      --tertiary: #eb953f;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--teal-50);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ── Top bar ────────────────────────────────────────────────────── */
+    .topbar {
+      background: var(--primary);
+      height: 56px;
+      display: flex;
+      align-items: center;
+      padding: 0 32px;
+      gap: 10px;
+    }
+
+    .topbar__logo-mark {
+      width: 34px;
+      height: 34px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .topbar__logo-mark svg {
+      width: 34px;
+      height: 34px;
+    }
+
+    .topbar__name {
+      font-size: 14px;
+      font-weight: 700;
+      color: #fff;
+      letter-spacing: .3px;
+    }
+
+    .topbar__divider {
+      width: 1px;
+      height: 20px;
+      background: rgba(255,255,255,.2);
+      margin: 0 8px;
+    }
+
+    .topbar__portal-label {
+      font-size: 12px;
+      font-weight: 500;
+      color: rgba(255,255,255,.6);
+      letter-spacing: .4px;
+    }
+
+    /* ── Page layout ────────────────────────────────────────────────── */
+    .page {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 20px;
+    }
+
+    .login-wrapper {
+      width: 100%;
+      max-width: 420px;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    /* ── Card ───────────────────────────────────────────────────────── */
+    .card {
+      background: #fff;
+      border-radius: var(--r-xl);
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow-md);
+      padding: 36px 32px;
+    }
+
+    /* ── Card header ────────────────────────────────────────────────── */
+    .card-header {
+      margin-bottom: 28px;
+    }
+
+    .card-header__eyebrow {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: .8px;
+      color: var(--ink-3);
+      margin-bottom: 4px;
+    }
+
+    .card-header__title {
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--ink);
+      line-height: 1.2;
+    }
+
+    .card-header__subtitle {
+      font-size: 13px;
+      color: var(--ink-3);
+      margin-top: 4px;
+      line-height: 1.5;
+    }
+
+    /* ── Form ───────────────────────────────────────────────────────── */
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      margin-bottom: 16px;
+    }
+
+    .form-group:last-of-type {
+      margin-bottom: 0;
+    }
+
+    .form-label {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: .6px;
+      color: var(--ink-3);
+    }
+
+    .input-wrap {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+
+    .input-icon {
+      position: absolute;
+      left: 12px;
+      color: var(--ink-3);
+      display: flex;
+      align-items: center;
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    .input-icon svg {
+      width: 15px;
+      height: 15px;
+    }
+
+    .form-input {
+      width: 100%;
+      height: 42px;
+      padding: 0 40px;
+      border: 1.5px solid var(--border);
+      border-radius: var(--r-md);
+      background: var(--surface-2);
+      color: var(--ink);
+      font-size: 14px;
+      font-family: inherit;
+      outline: none;
+      transition: border-color .18s, box-shadow .18s, background .18s;
+      -webkit-appearance: none;
+    }
+
+    .form-input::placeholder {
+      color: var(--ink-4);
+    }
+
+    .form-input:hover {
+      border-color: var(--ink-4);
+      background: #fff;
+    }
+
+    .form-input:focus {
+      border-color: var(--primary);
+      background: #fff;
+      box-shadow: 0 0 0 3px rgba(25,68,71,.10);
+    }
+
+    .form-input.error {
+      border-color: #c0392b;
+      background: #fff5f5;
+    }
+
+    .form-input.error:focus {
+      box-shadow: 0 0 0 3px rgba(192,57,43,.10);
+    }
+
+    .toggle-password {
+      position: absolute;
+      right: 12px;
+      color: var(--ink-3);
+      background: none;
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      padding: 4px;
+      border-radius: var(--r-sm);
+      transition: color .15s;
+    }
+
+    .toggle-password:hover { color: var(--primary); }
+
+    .toggle-password svg { width: 15px; height: 15px; }
+
+    /* ── Error message ──────────────────────────────────────────────── */
+    .error-msg {
+      display: none;
+      align-items: center;
+      gap: 6px;
+      padding: 10px 14px;
+      background: rgba(192,57,43,.08);
+      border: 1px solid rgba(192,57,43,.20);
+      border-radius: var(--r-md);
+      color: #7b1d13;
+      font-size: 13px;
+      font-weight: 500;
+      margin-top: 6px;
+    }
+
+    .error-msg.visible { display: flex; }
+
+    .error-msg svg { width: 14px; height: 14px; flex-shrink: 0; }
+
+    /* ── Row utilidad ───────────────────────────────────────────────── */
+    .form-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin: 14px 0 20px;
+    }
+
+    .checkbox-label {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      cursor: pointer;
+      font-size: 13px;
+      color: var(--ink-2);
+      user-select: none;
+    }
+
+    .checkbox-label input[type="checkbox"] {
+      width: 15px;
+      height: 15px;
+      accent-color: var(--primary);
+      cursor: pointer;
+    }
+
+    .forgot-link {
+      font-size: 13px;
+      color: var(--primary);
+      text-decoration: none;
+      font-weight: 500;
+      transition: opacity .15s;
+    }
+
+    .forgot-link:hover { opacity: .75; }
+
+    /* ── Submit button ──────────────────────────────────────────────── */
+    .btn-primary {
+      width: 100%;
+      height: 44px;
+      background: var(--primary);
+      color: #fff;
+      border: none;
+      border-radius: var(--r-md);
+      font-size: 14px;
+      font-weight: 600;
+      font-family: inherit;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: background .18s, transform .12s, box-shadow .18s;
+      letter-spacing: .2px;
+    }
+
+    .btn-primary:hover {
+      background: var(--primary-hover);
+      box-shadow: 0 4px 16px rgba(25,68,71,.25);
+    }
+
+    .btn-primary:active { transform: scale(.98); }
+
+    .btn-primary:disabled {
+      opacity: .55;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .btn-primary svg { width: 16px; height: 16px; }
+
+    /* ── Spinner ────────────────────────────────────────────────────── */
+    .spinner {
+      display: none;
+      width: 16px;
+      height: 16px;
+      border: 2px solid rgba(255,255,255,.4);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin .6s linear infinite;
+    }
+
+    .btn-primary.loading .spinner { display: block; }
+    .btn-primary.loading .btn-text { display: none; }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── Footer note ────────────────────────────────────────────────── */
+    .card-footer {
+      margin-top: 24px;
+      padding-top: 20px;
+      border-top: 1px solid var(--border-2);
+      text-align: center;
+    }
+
+    .card-footer__text {
+      font-size: 12px;
+      color: var(--ink-3);
+      line-height: 1.5;
+    }
+
+    .card-footer__link {
+      color: var(--primary);
+      text-decoration: none;
+      font-weight: 600;
+    }
+
+    .card-footer__link:hover { text-decoration: underline; }
+
+    /* ── Bottom legal ───────────────────────────────────────────────── */
+    .page-legal {
+      text-align: center;
+      font-size: 11.5px;
+      color: var(--ink-4);
+      padding-bottom: 24px;
+    }
+
+    .page-legal a {
+      color: var(--ink-3);
+      text-decoration: none;
+    }
+
+    .page-legal a:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+
+  <!-- Top bar -->
+  <header class="topbar">
+    <div class="topbar__logo-mark">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 50 50">
+        <defs><style>.st0{fill:#fff}</style></defs>
+        <path class="st0" d="M23.77,30.47l-8.22,6.82,6.25-1.21,1.96-5.6h.01Z"/>
+        <path class="st0" d="M22.82,36.21l4.56,3.17-2.55-8.89-2.01,5.72Z"/>
+        <path class="st0" d="M9.14,34.13l4.62,3.32,8.85-7.34-13.48,4.03h0Z"/>
+        <path class="st0" d="M25.81,30.45l2.7,9.38,5.41-1.33-8.1-8.04h-.01Z"/>
+        <path class="st0" d="M26.65,29.89l8.36,8.3,5.61-4.16-13.96-4.13h-.01Z"/>
+        <path class="st0" d="M24.3,10.18l-15.35,22.87,15.35-4.58V10.18Z"/>
+        <path class="st0" d="M25.63,28.46l15.42,4.56-15.42-22.85s0,18.29,0,18.29Z"/>
+      </svg>
+    </div>
+    <span class="topbar__name">Atalaya Mining</span>
+    <div class="topbar__divider"></div>
+    <span class="topbar__portal-label">Portal de Proveedores</span>
+  </header>
+
+  <!-- Main -->
+  <main class="page">
+    <div class="login-wrapper">
+
+      <div class="card">
+        <!-- Header -->
+        <div class="card-header">
+          <p class="card-header__eyebrow">Acceso seguro</p>
+          <h1 class="card-header__title">Bienvenido al portal</h1>
+          <p class="card-header__subtitle">Introduce tus credenciales para acceder a tu área de empresa.</p>
+        </div>
+
+        <!-- Form -->
+        <form id="loginForm" novalidate>
+
+          <!-- Usuario -->
+          <div class="form-group">
+            <label class="form-label" for="username">Usuario</label>
+            <div class="input-wrap">
+              <span class="input-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                  <circle cx="12" cy="7" r="4"/>
+                </svg>
+              </span>
+              <input
+                class="form-input"
+                id="username"
+                type="text"
+                placeholder="usuario@empresa.com"
+                autocomplete="username"
+                spellcheck="false"
+              />
+            </div>
+          </div>
+
+          <!-- Contraseña -->
+          <div class="form-group">
+            <label class="form-label" for="password">Contraseña</label>
+            <div class="input-wrap">
+              <span class="input-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                  <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                </svg>
+              </span>
+              <input
+                class="form-input"
+                id="password"
+                type="password"
+                placeholder="••••••••"
+                autocomplete="current-password"
+              />
+              <button type="button" class="toggle-password" id="togglePwd" aria-label="Ver contraseña">
+                <svg id="eyeIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                  <circle cx="12" cy="12" r="3"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <!-- Error banner -->
+          <div class="error-msg" id="errorMsg">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"/>
+              <line x1="12" y1="8" x2="12" y2="12"/>
+              <line x1="12" y1="16" x2="12.01" y2="16"/>
+            </svg>
+            <span id="errorText">Usuario o contraseña incorrectos.</span>
+          </div>
+
+          <!-- Recuérdame + olvidé -->
+          <div class="form-row">
+            <label class="checkbox-label">
+              <input type="checkbox" id="remember" />
+              Recordar sesión
+            </label>
+            <a href="#" class="forgot-link">¿Olvidaste tu contraseña?</a>
+          </div>
+
+          <!-- Botón -->
+          <button type="submit" class="btn-primary" id="submitBtn">
+            <div class="spinner"></div>
+            <span class="btn-text">
+              Iniciar sesión
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="5" y1="12" x2="19" y2="12"/>
+                <polyline points="12 5 19 12 12 19"/>
+              </svg>
+            </span>
+          </button>
+
+        </form>
+
+    </div>
+  </main>
+
+  <script>
+    const form      = document.getElementById('loginForm');
+    const submitBtn = document.getElementById('submitBtn');
+    const errorMsg  = document.getElementById('errorMsg');
+    const errorText = document.getElementById('errorText');
+    const togglePwd = document.getElementById('togglePwd');
+    const pwdInput  = document.getElementById('password');
+    const userInput = document.getElementById('username');
+
+    /* Toggle visibility contraseña */
+    togglePwd.addEventListener('click', () => {
+      const isHidden = pwdInput.type === 'password';
+      pwdInput.type = isHidden ? 'text' : 'password';
+      togglePwd.setAttribute('aria-label', isHidden ? 'Ocultar contraseña' : 'Ver contraseña');
+      /* swap icon */
+      document.getElementById('eyeIcon').innerHTML = isHidden
+        ? `<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/>`
+        : `<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>`;
+    });
+
+    /* Limpiar error al escribir */
+    [userInput, pwdInput].forEach(el => {
+      el.addEventListener('input', () => {
+        el.classList.remove('error');
+        errorMsg.classList.remove('visible');
+      });
+    });
+
+    /* Submit — simulación */
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const user = userInput.value.trim();
+      const pwd  = pwdInput.value;
+
+      /* Validación básica vacíos */
+      if (!user || !pwd) {
+        if (!user) userInput.classList.add('error');
+        if (!pwd)  pwdInput.classList.add('error');
+        errorText.textContent = 'Completa todos los campos.';
+        errorMsg.classList.add('visible');
+        return;
+      }
+
+      /* Loading state */
+      submitBtn.disabled = true;
+      submitBtn.classList.add('loading');
+      errorMsg.classList.remove('visible');
+
+      /* Simula llamada API */
+      await new Promise(r => setTimeout(r, 1400));
+
+      const USERS = {
+        'insersa':  { password: 'Insersa123',  company: 'Insersa'  },
+        'royman':   { password: 'Royman123',   company: 'Royman'   },
+        'mimese':   { password: 'Mimese123',   company: 'Mimese'   },
+        'ventura':  { password: 'Ventura123',  company: 'Ventura'  },
+      };
+
+      const match = USERS[user.toLowerCase()];
+
+      if (match && match.password === pwd) {
+        sessionStorage.setItem('atalaya_session', JSON.stringify({
+          username: user.toLowerCase(),
+          company:  match.company,
+        }));
+        submitBtn.innerHTML = `
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px">
+            <polyline points="20 6 9 17 4 12"/>
+          </svg>
+          <span>Acceso correcto…</span>
+        `;
+        submitBtn.style.background = '#1BA777';
+        setTimeout(() => window.location.replace('portal.html'), 600);
+      } else {
+        userInput.classList.add('error');
+        pwdInput.classList.add('error');
+        errorText.textContent = 'Usuario o contraseña incorrectos. Inténtalo de nuevo.';
+        errorMsg.classList.add('visible');
+        submitBtn.disabled = false;
+        submitBtn.classList.remove('loading');
+      }
+    });
+  </script>
+
+</body>
+</html>
