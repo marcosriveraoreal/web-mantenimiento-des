@@ -349,6 +349,11 @@ body {
 .rc-r2 { display: grid; grid-template-columns: 1.2fr 0.7fr 0.7fr 0.7fr 2fr; gap: 10px; }
 .rc-r3 { display: grid; grid-template-columns: 1fr auto; gap: 10px; align-items: end; }
 
+/* Date range */
+.date-range-wrap { display: flex; align-items: center; gap: 5px; }
+.fi-date-range { flex: 1; min-width: 0; }
+.date-sep { color: var(--li); font-size: 12px; flex-shrink: 0; font-weight: 600; }
+
 /* Lock field styling */
 .fi-lock {
   width: 100%; height: 36px; padding: 0 11px;
@@ -478,6 +483,18 @@ body {
 .rc-reject-bar{display:flex;align-items:flex-start;gap:9px;padding:10px 14px;background:rgba(205,0,43,.04);border-top:1px solid rgba(205,0,43,.12);}
 .rc-reject-badge{display:inline-flex;align-items:center;gap:3px;font-size:10.5px;font-weight:700;color:var(--er);background:rgba(205,0,43,.10);padding:2px 8px;border-radius:10px;white-space:nowrap;flex-shrink:0;margin-top:1px;}
 .rc-reject-motivo{font-size:12px;color:var(--mu);line-height:1.45;}
+
+/* Estado badges + action buttons in card header (edit mode) */
+.rc-estado-tag{display:none;font-size:10px;font-weight:700;padding:2px 8px;border-radius:8px;}
+.rc-estado-tag[data-e="solicitado"]{display:inline-block;background:#e3f0ff;color:#005fa3;}
+.rc-estado-tag[data-e="confirmado_externo"]{display:inline-block;background:#fff4d6;color:#a07000;}
+.rc-estado-tag[data-e="real_aceptado"]{display:inline-block;background:#e6f7ee;color:#1a7a3e;}
+.rc-estado-tag[data-e="cancelada"]{display:inline-block;background:rgba(205,0,43,.10);color:var(--er);}
+.rc-actions{display:flex;align-items:center;gap:4px;}
+.rc-btn-send{height:26px;padding:0 9px;font-size:11px;font-weight:600;border-radius:5px;border:none;background:#009fe3;color:#fff;cursor:pointer;transition:background .12s;}
+.rc-btn-send:hover{background:#0080b8;}
+.rc-btn-accept{height:26px;padding:0 9px;font-size:11px;font-weight:600;border-radius:5px;border:none;background:#1a8a4a;color:#fff;cursor:pointer;transition:background .12s;}
+.rc-btn-accept:hover{background:#136336;}
 
 .mi-danger{background:var(--er-bg);color:var(--er);}
 .btn-modal-danger{background:var(--er);color:#fff;}
@@ -907,6 +924,67 @@ function mkSelHTML(opts, ph, field) {
 let rowId = 0;
 const rowFiles = new Map();
 
+function getEstado(f) {
+  if (f.estado) return f.estado;
+  if (f.real > 0) return 'real_aceptado';
+  if (f.contrata > 0) return 'confirmado_externo';
+  return 'no_solicitado';
+}
+
+function renderCardActions(card) {
+  const actions = card.querySelector('.rc-actions');
+  const estadoTag = card.querySelector('.rc-estado-tag');
+  if (!actions) return;
+
+  const isCancelada = !!card.dataset.cancelada;
+  const estado = isCancelada ? 'cancelada' : (card.dataset.estado || 'no_solicitado');
+
+  const LABELS = {
+    no_solicitado: '', solicitado: 'Enviado',
+    confirmado_externo: 'Conf. externo', real_aceptado: 'Real aceptado', cancelada: 'Rechazada'
+  };
+  if (estadoTag) {
+    estadoTag.textContent = LABELS[estado] || estado;
+    estadoTag.dataset.e = estado;
+  }
+
+  const realInp = card.querySelector('[data-field="real"]');
+  if (realInp) realInp.disabled = estado !== 'confirmado_externo';
+
+  actions.innerHTML = '';
+  if (isCancelada) return;
+
+  if (estado === 'no_solicitado') {
+    const btnSend = document.createElement('button');
+    btnSend.type = 'button'; btnSend.className = 'rc-btn-send';
+    btnSend.textContent = 'Enviar ▶'; btnSend.title = 'Enviar a proveedor';
+    btnSend.addEventListener('click', () => { card.dataset.estado = 'solicitado'; renderCardActions(card); });
+    const btnDel = document.createElement('button');
+    btnDel.type = 'button'; btnDel.className = 'rc-del'; btnDel.title = 'Eliminar línea';
+    btnDel.innerHTML = '<svg viewBox="0 0 16 16"><path d="M3 5h10M6 5V3h4v2M5 5l1 9h4l1-9"/></svg>';
+    btnDel.addEventListener('click', () => { rowFiles.delete(card.dataset.id); card.remove(); checkEmpty(); updateRowCount(); renumberRows(); });
+    actions.appendChild(btnSend);
+    actions.appendChild(btnDel);
+  } else if (estado === 'solicitado') {
+    const btnCancel = document.createElement('button');
+    btnCancel.type = 'button'; btnCancel.className = 'rc-cancel-btn'; btnCancel.title = 'Rechazar línea';
+    btnCancel.innerHTML = '<svg viewBox="0 0 16 16"><line x1="3" y1="3" x2="13" y2="13"/><line x1="13" y1="3" x2="3" y2="13"/></svg>';
+    btnCancel.addEventListener('click', () => openRejectModal(card));
+    actions.appendChild(btnCancel);
+  } else if (estado === 'confirmado_externo') {
+    const btnAccept = document.createElement('button');
+    btnAccept.type = 'button'; btnAccept.className = 'rc-btn-accept'; btnAccept.title = 'Aceptar Real';
+    btnAccept.textContent = '✓ Aceptar';
+    btnAccept.addEventListener('click', () => { card.dataset.estado = 'real_aceptado'; renderCardActions(card); });
+    const btnCancel = document.createElement('button');
+    btnCancel.type = 'button'; btnCancel.className = 'rc-cancel-btn'; btnCancel.title = 'Rechazar línea';
+    btnCancel.innerHTML = '<svg viewBox="0 0 16 16"><line x1="3" y1="3" x2="13" y2="13"/><line x1="13" y1="3" x2="3" y2="13"/></svg>';
+    btnCancel.addEventListener('click', () => openRejectModal(card));
+    actions.appendChild(btnAccept);
+    actions.appendChild(btnCancel);
+  }
+}
+
 function updateDupBtn(){
   const n = document.querySelectorAll('#filas-body .row-chk:checked').length;
   document.getElementById('dup-count').textContent = n;
@@ -921,11 +999,12 @@ function addRow(vals = null){
   container.querySelector('.empty-card')?.remove();
   const id = ++rowId;
   const n = container.querySelectorAll('.row-card').length + 1;
-  const [vFecha, vTurno, vSup, vCat, vSol, vCon, vReal, vZona, vObs] = vals || [];
+  const [vFechaIni, vFechaFin, vTurno, vSup, vCat, vSol, vCon, vReal, vZona, vObs, vEstado] = vals || [];
 
   const card = document.createElement('div');
   card.className = 'row-card';
   card.dataset.id = String(id);
+  card.dataset.estado = vEstado || (editId ? 'no_solicitado' : 'solicitado');
 
   card.innerHTML = `
     <div class="rc-hdr">
@@ -934,17 +1013,21 @@ function addRow(vals = null){
         <span class="rc-tag rc-sup empty">Sin suministrador</span>
         <span class="rc-tag rc-fecha empty">Sin fecha</span>
         <span class="rc-tag rc-turno turno" style="display:none"></span>
+        ${editId ? '<span class="rc-estado-tag"></span>' : ''}
       </div>
       <input type="checkbox" class="row-chk" title="Seleccionar línea">
-      ${editId ? `<button class="rc-cancel-btn" title="Rechazar línea"><svg viewBox="0 0 16 16"><line x1="3" y1="3" x2="13" y2="13"/><line x1="13" y1="3" x2="3" y2="13"/></svg></button>` : ''}
-      ${editId ? `<button class="rc-del" title="Eliminar línea"><svg viewBox="0 0 16 16"><path d="M3 5h10M6 5V3h4v2M5 5l1 9h4l1-9"/></svg></button>` : ''}
+      ${editId ? '<div class="rc-actions"></div>' : ''}
     </div>
     <div class="rc-body">
 
       <div class="rc-r1">
         <div class="fg">
-          <label class="fl">Fecha <span class="req">*</span></label>
-          <input type="date" class="fi" data-field="fecha" value="${vFecha||''}">
+          <label class="fl">Rango de fechas <span class="req">*</span></label>
+          <div class="date-range-wrap">
+            <input type="date" class="fi fi-date-range" data-field="fecha_inicio" value="${vFechaIni||''}">
+            <span class="date-sep">→</span>
+            <input type="date" class="fi fi-date-range" data-field="fecha_fin" value="${vFechaFin||''}">
+          </div>
         </div>
         <div class="fg">
           <label class="fl">Turno <span class="req">*</span></label>
@@ -1018,20 +1101,21 @@ function addRow(vals = null){
   if (vZona)  get('zona').value = vZona;
 
   /* Live header tags */
-  const tagSup   = card.querySelector('.rc-sup');
-  const tagFecha = card.querySelector('.rc-fecha');
-  const tagTurno = card.querySelector('.rc-turno');
-  const supSel   = get('suministrador');
-  const fechaInp = get('fecha');
-  const turnoSel = get('turno');
+  const tagSup      = card.querySelector('.rc-sup');
+  const tagFecha    = card.querySelector('.rc-fecha');
+  const tagTurno    = card.querySelector('.rc-turno');
+  const supSel      = get('suministrador');
+  const fechaIniInp = get('fecha_inicio');
+  const fechaFinInp = get('fecha_fin');
+  const turnoSel    = get('turno');
 
   function refreshTags(){
-    const s = supSel.value, f = fechaInp.value, t = turnoSel.value;
+    const s = supSel.value, fi = fechaIniInp.value, ff = fechaFinInp.value, t = turnoSel.value;
     tagSup.textContent = s || 'Sin suministrador';
     tagSup.classList.toggle('empty', !s);
-    if (f) {
-      const fd = new Date(f + 'T12:00');
-      tagFecha.textContent = fd.toLocaleDateString('es-ES', { day: 'numeric', month: 'short' });
+    if (fi) {
+      const fmt = d => new Date(d + 'T12:00').toLocaleDateString('es-ES', { day: 'numeric', month: 'short' });
+      tagFecha.textContent = ff && ff !== fi ? `${fmt(fi)} – ${fmt(ff)}` : fmt(fi);
       tagFecha.classList.remove('empty');
     } else {
       tagFecha.textContent = 'Sin fecha';
@@ -1040,9 +1124,16 @@ function addRow(vals = null){
     if (t) { tagTurno.textContent = t; tagTurno.style.display = ''; }
     else   { tagTurno.style.display = 'none'; }
   }
+  fechaIniInp.addEventListener('change', () => {
+    if (fechaFinInp.value && fechaFinInp.value < fechaIniInp.value) fechaFinInp.value = fechaIniInp.value;
+    if (!fechaFinInp.value) fechaFinInp.value = fechaIniInp.value;
+    fechaFinInp.min = fechaIniInp.value;
+    refreshTags();
+  });
+  fechaFinInp.addEventListener('change', refreshTags);
   supSel.addEventListener('change', refreshTags);
-  fechaInp.addEventListener('change', refreshTags);
   turnoSel.addEventListener('change', refreshTags);
+  if (fechaIniInp.value) fechaFinInp.min = fechaIniInp.value;
   refreshTags();
 
   /* Checkbox */
@@ -1066,14 +1157,8 @@ function addRow(vals = null){
     adjN.style.display = 'none'; btnR.style.display = 'none'; btnA.style.display = 'inline-flex';
   });
 
-  /* Delete */
-  card.querySelector('.rc-del')?.addEventListener('click', () => {
-    rowFiles.delete(card.dataset.id);
-    card.remove(); checkEmpty(); updateRowCount(); renumberRows();
-  });
-
-  /* Reject / cancel line */
-  card.querySelector('.rc-cancel-btn')?.addEventListener('click', () => openRejectModal(card));
+  /* State actions (edit mode only) */
+  if (editId) renderCardActions(card);
 
   document.getElementById('filas-body').appendChild(card);
   updateRowCount(); renumberRows();
@@ -1108,7 +1193,7 @@ function duplicateSelected(){
   if (!checked.length) return;
   checked.forEach(card => {
     const get = f => card.querySelector(`[data-field="${f}"]`);
-    addRow([get('fecha').value, get('turno').value, get('suministrador').value, get('categoria').value,
+    addRow([get('fecha_inicio').value, get('fecha_fin').value, get('turno').value, get('suministrador').value, get('categoria').value,
             get('solicitado').value, get('contrata').value, get('real').value,
             get('zona').value, get('observaciones').value]);
   });
@@ -1136,13 +1221,28 @@ document.getElementById('btn-clear-rows').addEventListener('click', () => {
 addRow();
 
 /* ══ Collect & Validate ════════════════════════════════════════════════ */
+function expandDateRange(start, end) {
+  if (!start) return [''];
+  const dates = [];
+  const s = new Date(start + 'T12:00');
+  const e = new Date((end && end >= start ? end : start) + 'T12:00');
+  for (let d = new Date(s); d <= e; d.setDate(d.getDate() + 1)) {
+    dates.push(d.toISOString().split('T')[0]);
+  }
+  return dates.length ? dates : [start];
+}
+
 function collectData(){
   const filas = [];
   document.querySelectorAll('#filas-body .row-card').forEach(card => {
     const get = f => card.querySelector(`[data-field="${f}"]`);
     const rf = rowFiles.get(card.dataset.id);
-    const fila = {
-      fecha: get('fecha').value, turno: get('turno').value,
+    const fechaIni = get('fecha_inicio').value;
+    const fechaFin = get('fecha_fin').value;
+    const dates = expandDateRange(fechaIni, fechaFin);
+    const baseFila = {
+      estado: card.dataset.estado || (editId ? 'no_solicitado' : 'solicitado'),
+      turno: get('turno').value,
       suministrador: get('suministrador').value, categoria: get('categoria').value,
       solicitado: parseInt(get('solicitado').value)||0,
       contrata:   parseInt(get('contrata').value)  ||0,
@@ -1151,11 +1251,11 @@ function collectData(){
       adjunto: rf ? rf.name : null,
     };
     if (card.dataset.cancelada) {
-      fila.cancelada          = true;
-      fila.motivo_cancelacion = card.dataset.motivoRechazo || '';
-      fila.canceladaAt        = card.dataset.canceladaAt   || new Date().toISOString();
+      baseFila.cancelada          = true;
+      baseFila.motivo_cancelacion = card.dataset.motivoRechazo || '';
+      baseFila.canceladaAt        = card.dataset.canceladaAt   || new Date().toISOString();
     }
-    filas.push(fila);
+    dates.forEach(fecha => filas.push({ ...baseFila, fecha }));
   });
   return {
     numero_solicitud: document.getElementById('num-solicitud').value,
@@ -1174,7 +1274,7 @@ function validate(){
   cards.forEach(card => {
     if (card.dataset.cancelada) return; // skip rejected lines
     const get = f => card.querySelector(`[data-field="${f}"]`);
-    if (!get('fecha').value)        { get('fecha').classList.add('err'); invalid++; }
+    if (!get('fecha_inicio').value) { get('fecha_inicio').classList.add('err'); invalid++; }
     ['turno','suministrador','zona'].forEach(f => { const el = get(f); if (!el.value) { el.classList.add('err'); invalid++; } });
   });
   if (invalid) { showToast(`Faltan ${invalid} campo${invalid!==1?'s':''} obligatorio${invalid!==1?'s':''}.`, 'error'); return false; }
@@ -1211,8 +1311,7 @@ function applyCardRejected(card, motivo, canceladaAt) {
     bar.querySelector('.rc-reject-motivo').textContent = motivo;
     bar.style.display = '';
   }
-  const cancelBtn = card.querySelector('.rc-cancel-btn');
-  if (cancelBtn) cancelBtn.style.display = 'none';
+  if (editId) renderCardActions(card);
 }
 
 function openRejectModal(card) {
@@ -1315,8 +1414,9 @@ function loadEditRecord(){
 
   document.getElementById('filas-body').innerHTML = '';
   (rec.filas || []).forEach(f => {
-    addRow([f.fecha||'', f.turno, f.suministrador, f.categoria,
-            f.solicitado??0, f.contrata??0, f.real??0, f.zona, f.observaciones??'']);
+    addRow([f.fecha||'', f.fecha||'', f.turno, f.suministrador, f.categoria,
+            f.solicitado??0, f.contrata??0, f.real??0, f.zona, f.observaciones??'',
+            getEstado(f)]);
     const cards = document.querySelectorAll('#filas-body .row-card');
     const last  = cards[cards.length - 1];
     if (last) {

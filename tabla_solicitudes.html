@@ -206,6 +206,22 @@ tbody tr:last-child td{border-bottom:none;}
 .badge-ok::before{background:var(--ok);}
 .badge-cancel{background:rgba(155,155,155,.13);color:#666;}
 .badge-cancel::before{background:#aaa;}
+.badge-nosol{background:rgba(100,100,100,.10);color:#555;}
+.badge-nosol::before{background:#aaa;}
+.badge-sol{background:var(--wa-bg);color:var(--wa-d);}
+.badge-sol::before{background:var(--wa);}
+.badge-ext{background:var(--in-bg);color:var(--in-d);}
+.badge-ext::before{background:var(--in);}
+.badge-real{background:var(--ok-bg);color:var(--ok-d);}
+.badge-real::before{background:var(--ok);}
+.badge-aprob{background:var(--ok-bg);color:var(--ok-d);}
+.badge-aprob::before{background:var(--ok);}
+.badge-rej{background:var(--er-bg);color:var(--er-d);}
+.badge-rej::before{background:var(--er);}
+.ab--send{color:var(--in-d);}
+.ab--send:hover{background:var(--in-bg);border-color:rgba(0,159,227,.3);}
+.ab--ok{color:var(--ok-d);}
+.ab--ok:hover{background:var(--ok-bg);border-color:rgba(27,167,119,.3);}
 .motivo-area{padding:0 22px 18px;}
 .motivo-lbl{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--li);display:block;margin-bottom:6px;}
 .motivo-ta{width:100%;min-height:88px;resize:vertical;padding:10px 12px;border:1px solid var(--bd);border-radius:7px;font-family:inherit;font-size:13px;color:var(--tx);background:#fff;outline:none;transition:border-color .15s,box-shadow .15s;line-height:1.5;}
@@ -324,7 +340,7 @@ tbody tr:last-child td{border-bottom:none;}
 .btn-danger:hover{background:#a5001f;box-shadow:0 4px 10px rgba(205,0,43,.25);}
 
 /* ═══ TOAST ══════════════════════════════════════════════════════════ */
-.toast{position:fixed;bottom:26px;right:26px;background:#fff;color:var(--tx);padding:12px 16px;border-radius:9px;font-size:13px;font-weight:500;box-shadow:var(--shadow-lg);opacity:0;transform:translateY(10px) scale(.97);transition:opacity .22s,transform .22s;z-index:400;border:0.5px solid var(--bd-l);border-left:3px solid var(--ok);display:flex;align-items:center;gap:10px;min-width:280px;}
+.toast{position:fixed;bottom:26px;right:26px;background:#fff;color:var(--tx);padding:12px 16px;border-radius:9px;font-size:13px;font-weight:500;box-shadow:var(--shadow-lg);opacity:0;pointer-events:none;transform:translateY(10px) scale(.97);transition:opacity .22s,transform .22s;z-index:400;border:0.5px solid var(--bd-l);border-left:3px solid var(--ok);display:flex;align-items:center;gap:10px;min-width:280px;}
 .toast.show{opacity:1;transform:translateY(0) scale(1);}
 .toast.t-err{border-left-color:var(--er);}
 .toast.t-warn{border-left-color:var(--wa);}
@@ -415,19 +431,19 @@ tbody tr:last-child td{border-bottom:none;}
           <div class="stat__icon stat__icon--pend">
             <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
           </div>
-          <div><div class="stat__val" id="sv-pend">0</div><div class="stat__lbl">Sin confirmar</div></div>
+          <div><div class="stat__val" id="sv-pend">0</div><div class="stat__lbl">Sin completar</div></div>
         </div>
         <div class="stat" data-f="partial" id="sc-part">
           <div class="stat__icon stat__icon--part">
             <svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 0 1 0 20"/><path d="M12 2a10 10 0 0 0 0 20"/><line x1="12" y1="2" x2="12" y2="22"/></svg>
           </div>
-          <div><div class="stat__val" id="sv-part">0</div><div class="stat__lbl">Parcialmente confirmadas</div></div>
+          <div><div class="stat__val" id="sv-part">0</div><div class="stat__lbl">Pendiente revisión</div></div>
         </div>
         <div class="stat" data-f="confirmed" id="sc-ok">
           <div class="stat__icon stat__icon--ok">
             <svg viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
           </div>
-          <div><div class="stat__val" id="sv-ok">0</div><div class="stat__lbl">Totalmente confirmadas</div></div>
+          <div><div class="stat__val" id="sv-ok">0</div><div class="stat__lbl">Completadas</div></div>
         </div>
       </div>
 
@@ -461,7 +477,6 @@ tbody tr:last-child td{border-bottom:none;}
               <th style="text-align:center">Sol.</th>
               <th style="text-align:center">Con.</th>
               <th style="text-align:center">Real</th>
-              <th>Estado</th>
               <th style="text-align:center">Acciones</th>
             </tr>
           </thead>
@@ -482,7 +497,7 @@ tbody tr:last-child td{border-bottom:none;}
     <div class="drawer-head">
       <div class="drawer-head__top">
         <div>
-          <div class="drawer-eyebrow">Detalle de solicitud</div>
+          <div class="drawer-eyebrow" id="drawerEyebrow">Detalle de solicitud</div>
           <div class="drawer-title" id="dTitle">SOL-0001</div>
         </div>
         <button class="drawer-close" id="drawerClose">
@@ -501,6 +516,10 @@ tbody tr:last-child td{border-bottom:none;}
         <button class="btn btn-gh" id="dBtnEdit" style="height:36px;border-color:rgba(235,149,63,.4);color:var(--ac-h);">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4z"/></svg>
           Editar solicitud
+        </button>
+        <button class="btn" id="dBtnSendAll" style="height:36px;background:#009fe3;color:#fff;display:none;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2" fill="#fff" stroke="none"/></svg>
+          Enviar a proveedores
         </button>
         <button class="btn btn-p" id="dBtnSaveReal" style="height:36px;">
           <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2"><polyline points="20 6 9 17 4 12"/></svg>
@@ -560,6 +579,32 @@ tbody tr:last-child td{border-bottom:none;}
   </div>
 </div>
 
+<!-- REJECT CONFIRMATION MODAL -->
+<div class="modal-overlay" id="modalRejectConf">
+  <div class="modal">
+    <div class="modal-head">
+      <div class="mi mi-danger">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+      </div>
+      <div>
+        <h2>Rechazar confirmación</h2>
+        <p>Indica el motivo del rechazo de la <strong id="rejectConfNum">línea 1 de SOL-0001</strong>. El proveedor podrá volver a confirmar el personal disponible.</p>
+      </div>
+    </div>
+    <div class="motivo-area">
+      <label class="motivo-lbl" for="rejectConfMotivo">Motivo del rechazo</label>
+      <textarea class="motivo-ta" id="rejectConfMotivo" placeholder="Describe el motivo del rechazo de la confirmación…"></textarea>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-gh" id="rejectConfNo" style="height:36px;">Volver</button>
+      <button class="btn-danger" id="rejectConfSi">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+        Confirmar rechazo
+      </button>
+    </div>
+  </div>
+</div>
+
 <!-- TOAST -->
 <div class="toast" id="toast">
   <div class="ti"><svg viewBox="0 0 16 16"><path d="M3 8l4 4 6-6"/></svg></div>
@@ -596,21 +641,33 @@ function recStats(rec) {
   };
 }
 
+function getEstado(f) {
+  if (f.cancelada) return 'cancelada';
+  if (f.estado) return f.estado;
+  if ((f.real || 0) > 0) return 'real_aceptado';
+  if ((f.contrata || 0) > 0) return 'confirmado_externo';
+  return 'solicitado';
+}
+
 function globalStatus(rec) {
-  const {sol, con} = recStats(rec);
-  if (con === 0)   return 'pending';
-  if (con >= sol)  return 'confirmed';
-  return 'partial';
+  const filas = rec.filas || [];
+  const active = filas.filter(f => !f.cancelada);
+  if (!active.length) return 'completed';
+  const estados = active.map(f => getEstado(f));
+  if (estados.every(e => e === 'real_aceptado' || e === 'aprobado_interno')) return 'completed';
+  if (estados.some(e => e === 'confirmado_externo')) return 'review';
+  if (estados.some(e => e === 'rechazado_interno')) return 'partial';
+  if (estados.some(e => e === 'no_solicitado')) return 'draft';
+  return 'sent';
 }
 
 function supStatus(rec, sup) {
-  const filas = (rec.filas||[]).filter(f=>f.suministrador===sup);
+  const filas = (rec.filas||[]).filter(f=>f.suministrador===sup && !f.cancelada);
   if (!filas.length) return null;
-  const sol = filas.reduce((a,f)=>a+(f.solicitado||0),0);
-  const con = filas.reduce((a,f)=>a+(f.contrata  ||0),0);
-  if (con===0)    return 'pend';
-  if (con>=sol)   return 'ok';
-  return 'part';
+  const estados = filas.map(f => getEstado(f));
+  if (estados.every(e => e === 'real_aceptado' || e === 'aprobado_interno')) return 'ok';
+  if (estados.some(e => e === 'confirmado_externo' || e === 'aprobado_interno')) return 'part';
+  return 'pend';
 }
 
 /* Sidebar badges */
@@ -631,21 +688,21 @@ function renderAll() {
   const all = load();
 
   // Stats
-  const counts = {all:all.length, pending:0, partial:0, confirmed:0};
-  all.forEach(r => counts[globalStatus(r)]++);
+  const counts = {all:all.length, draft:0, sent:0, review:0, partial:0, completed:0};
+  all.forEach(r => { const st = globalStatus(r); if(counts[st]!==undefined) counts[st]++; });
   document.getElementById('sv-all').textContent  = counts.all;
-  document.getElementById('sv-pend').textContent = counts.pending;
-  document.getElementById('sv-part').textContent = counts.partial;
-  document.getElementById('sv-ok').textContent   = counts.confirmed;
+  document.getElementById('sv-pend').textContent = counts.draft + counts.sent + counts.partial;
+  document.getElementById('sv-part').textContent = counts.review;
+  document.getElementById('sv-ok').textContent   = counts.completed;
 
   // Filter
   let rows = all.filter(r => {
     const st = globalStatus(r);
     const matchF =
       activeFilter==='all' ? true :
-      activeFilter==='pending' ? st==='pending' :
-      activeFilter==='partial' ? st==='partial' :
-      st==='confirmed';
+      activeFilter==='pending' ? (st==='draft' || st==='sent' || st==='partial') :
+      activeFilter==='partial' ? st==='review' :
+      st==='completed';
 
     const numStr = String(r.numero_solicitud||r.id).padStart(4,'0');
     const matchS = !activeSearch ||
@@ -663,7 +720,7 @@ function renderAll() {
   const tbody = document.getElementById('tableBody');
 
   if (!rows.length) {
-    tbody.innerHTML = `<tr><td colspan="10"><div class="empty-state">
+    tbody.innerHTML = `<tr><td colspan="9"><div class="empty-state">
       <div class="empty-state__icon"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div>
       <h3>Sin resultados</h3>
       <p>${activeFilter!=='all'||activeSearch||activeSup?'Prueba a cambiar los filtros.':'Aún no hay solicitudes. Crea una nueva con el botón superior.'}</p>
@@ -672,15 +729,16 @@ function renderAll() {
   }
 
   const BADGE = {
-    pending:   ['badge-pend', 'Pendiente'],
-    partial:   ['badge-part', 'Parcial'],
-    confirmed: ['badge-ok',   'Confirmada'],
+    draft:     ['badge-nosol', 'Borrador'],
+    sent:      ['badge-pend',  'Enviada'],
+    review:    ['badge-part',  'Revisión'],
+    partial:   ['badge-rej',   'Rechazado'],
+    completed: ['badge-ok',    'Completada'],
+    cancelled: ['badge-cancel','Cancelada'],
   };
 
   tbody.innerHTML = rows.map(r => {
     const {sol,con,real} = recStats(r);
-    const st   = globalStatus(r);
-    const [bc,bt] = BADGE[st];
     const {main:dm, sub:ds} = dateRange(r);
     const numStr = String(r.numero_solicitud||r.id).padStart(4,'0');
 
@@ -705,7 +763,6 @@ function renderAll() {
       <td style="text-align:center"><span class="c-n">${sol}</span></td>
       <td style="text-align:center"><span class="c-n ${con>0?'c-n--ok':''}">${con}</span></td>
       <td style="text-align:center"><span class="c-n ${real>0?'c-n--ok':'c-n--dim'}">${real||'—'}</span></td>
-      <td><span class="badge ${bc}">${bt}</span></td>
       <td style="text-align:center">
         <div class="action-btns">
           <button class="ab ab--view" data-id="${r.id}" title="Ver detalle">
@@ -723,8 +780,8 @@ function renderAll() {
   }).join('');
 
   // Bind buttons
-  document.querySelectorAll('.ab--view').forEach(b => b.addEventListener('click', ()=>openDrawer(+b.dataset.id)));
-  document.querySelectorAll('.ab--edit').forEach(b => b.addEventListener('click', ()=>editRecord(+b.dataset.id)));
+  document.querySelectorAll('.ab--view').forEach(b => b.addEventListener('click', ()=>openDrawer(+b.dataset.id, 'view')));
+  document.querySelectorAll('.ab--edit').forEach(b => b.addEventListener('click', ()=>openDrawer(+b.dataset.id, 'edit')));
   document.querySelectorAll('.ab--del').forEach(b  => b.addEventListener('click', ()=>confirmDelete(+b.dataset.id, b.dataset.num)));
 }
 
@@ -744,17 +801,19 @@ document.getElementById('btn-refresh').addEventListener('click', () => { renderA
 /* ══ DRAWER ═══════════════════════════════════════════════════════════ */
 let activeDrawerId = null;
 
-function openDrawer(id) {
+function openDrawer(id, mode = 'view') {
   const records = load();
   const r = records.find(rec=>rec.id===id);
   if (!r) return;
   activeDrawerId = id;
+  const viewOnly = mode === 'view';
 
   const numStr = String(r.numero_solicitud||r.id).padStart(4,'0');
   const {sol,con,real} = recStats(r);
   const {main:dm} = dateRange(r);
 
   document.getElementById('dTitle').textContent = `SOL-${numStr}`;
+  document.getElementById('drawerEyebrow').textContent = viewOnly ? 'Vista de solicitud' : 'Gestión de solicitud';
 
   const metaItems = [
     ['Creado',    fmtDT(r.createdAt)],
@@ -777,6 +836,54 @@ function openDrawer(id) {
     const init   = s.slice(0,2).toUpperCase();
     const rows   = filas.map((f,li)=>{
       const isFC = !!f.cancelada;
+      const estado = getEstado(f);
+      const realEditable = !viewOnly && estado === 'aprobado_interno';
+
+      const estadoBadgeMap = {
+        no_solicitado:      ['badge-nosol', 'No enviado'],
+        solicitado:         ['badge-sol',   'Enviado'],
+        confirmado_externo: ['badge-ext',   'Conf. ext.'],
+        aprobado_interno:   ['badge-aprob', 'Aprobado'],
+        rechazado_interno:  ['badge-rej',   'Rechazado'],
+        real_aceptado:      ['badge-real',  'Aceptado'],
+        cancelada:          ['badge-cancel','Cancelada'],
+      };
+      const [ebCls, ebTxt] = estadoBadgeMap[estado] || estadoBadgeMap['no_solicitado'];
+
+      let actionCell;
+      if (viewOnly) {
+        actionCell = '';
+      } else if (estado === 'cancelada') {
+        actionCell = `<span title="${f.motivo_cancelacion||'Sin motivo'}" style="display:inline-flex;align-items:center;gap:3px;font-size:10px;font-weight:700;color:var(--er);background:var(--er-bg);padding:2px 7px;border-radius:10px;cursor:help;white-space:nowrap">✕ Cancelada</span>`;
+      } else if (estado === 'no_solicitado') {
+        actionCell = `
+          <button class="ab ab--send fila-send-btn" data-gi="${f._gi}" data-li="${li+1}" title="Enviar a proveedor">
+            <svg viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+          </button>
+          <button class="ab ab--del fila-cancel-btn" data-gi="${f._gi}" data-li="${li+1}" title="Cancelar">
+            <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>`;
+      } else if (estado === 'solicitado') {
+        actionCell = `
+          <button class="ab ab--del fila-cancel-btn" data-gi="${f._gi}" data-li="${li+1}" title="Cancelar">
+            <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>`;
+      } else if (estado === 'confirmado_externo') {
+        actionCell = `
+          <button class="ab ab--ok fila-approve-btn" data-gi="${f._gi}" data-li="${li+1}" title="Aprobar confirmación del proveedor">
+            <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+          </button>
+          <button class="ab ab--del fila-reject-btn" data-gi="${f._gi}" data-li="${li+1}" title="Rechazar confirmación con motivo">
+            <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>`;
+      } else if (estado === 'rechazado_interno') {
+        actionCell = `<span style="color:var(--er);font-size:10px;font-weight:700;white-space:nowrap;" title="${(f.motivo_rechazo||'').replace(/"/g,'&quot;')}">✕ Rechazado</span>`;
+      } else if (estado === 'aprobado_interno') {
+        actionCell = `<span style="color:var(--ok-d);font-size:11px;font-weight:700;">✓ Aprobado</span>`;
+      } else {
+        actionCell = `<span style="color:var(--ok-d);font-size:11px;font-weight:700;">✓</span>`;
+      }
+
       return `
       <tr style="${isFC?'background:rgba(205,0,43,.03);opacity:.7':''}">
         <td><span class="lt-num" style="${isFC?'background:var(--er)':''}">${li+1}</span></td>
@@ -792,20 +899,14 @@ function openDrawer(id) {
             data-global-idx="${f._gi}"
             data-max="${f.solicitado||0}"
             title="Real asistido"
-            ${isFC?'disabled style="opacity:.4"':''}>
+            ${!realEditable ? 'disabled style="opacity:.4"' : ''}>
         </td>
-        <td style="font-size:11px;color:var(--li);max-width:80px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${f.observaciones||''}</td>
+        <td><span class="badge ${ebCls}" style="font-size:10px;padding:2px 7px">${ebTxt}</span></td>
+        <td style="font-size:11px;max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;${estado==='rechazado_interno'?'color:var(--er);font-style:italic':'color:var(--li)'}">
+          ${estado === 'rechazado_interno' ? (f.motivo_rechazo || '') : (f.observaciones || '')}
+        </td>
         <td style="text-align:center;padding:6px 8px">
-          ${isFC
-            ? `<span title="${f.motivo_cancelacion||'Sin motivo'}" style="display:inline-flex;align-items:center;gap:3px;font-size:10px;font-weight:700;color:var(--er);background:var(--er-bg);padding:2px 7px;border-radius:10px;cursor:help;white-space:nowrap">✕ Cancelada</span>`
-            : `<button class="ab ab--del fila-cancel-btn"
-                 data-gi="${f._gi}"
-                 data-li="${li+1}"
-                 title="Cancelar esta línea"
-                 style="width:24px;height:24px">
-                 <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-               </button>`
-          }
+          <div style="display:inline-flex;gap:3px;align-items:center">${actionCell}</div>
         </td>
       </tr>`;
     }).join('');
@@ -826,6 +927,7 @@ function openDrawer(id) {
             <th style="text-align:center">Sol.</th>
             <th style="text-align:center">Con.</th>
             <th style="text-align:center">Real</th>
+            <th>Estado</th>
             <th>Obs.</th>
             <th></th>
           </tr></thead>
@@ -850,10 +952,24 @@ function openDrawer(id) {
   });
 
   updateDrawerFooter();
-  document.getElementById('dBtnEdit').onclick = () => editRecord(activeDrawerId);
+  document.getElementById('dBtnEdit').style.display = 'none';
+  document.getElementById('dBtnSaveReal').style.display = viewOnly ? 'none' : 'inline-flex';
+  if (viewOnly) document.getElementById('dBtnSendAll').style.display = 'none';
 
   document.querySelectorAll('.fila-cancel-btn').forEach(btn => {
     btn.addEventListener('click', () => openFilaCancelModal(activeDrawerId, parseInt(btn.dataset.gi), parseInt(btn.dataset.li)));
+  });
+
+  document.querySelectorAll('.fila-send-btn').forEach(btn => {
+    btn.addEventListener('click', () => sendFila(activeDrawerId, parseInt(btn.dataset.gi), parseInt(btn.dataset.li)));
+  });
+
+  document.querySelectorAll('.fila-approve-btn').forEach(btn => {
+    btn.addEventListener('click', () => approveFilaConf(activeDrawerId, parseInt(btn.dataset.gi)));
+  });
+
+  document.querySelectorAll('.fila-reject-btn').forEach(btn => {
+    btn.addEventListener('click', () => openFilaRejectModal(activeDrawerId, parseInt(btn.dataset.gi), parseInt(btn.dataset.li)));
   });
 
   document.getElementById('drawerOverlay').classList.add('open');
@@ -863,6 +979,9 @@ function updateDrawerFooter() {
   let totalReal = 0;
   document.querySelectorAll('.real-inp').forEach(i=>totalReal+=(parseInt(i.value)||0));
   document.getElementById('dFootInfo').textContent = `Real total: ${totalReal} personas`;
+  // Mostrar "Enviar a proveedores" solo si hay líneas pendientes de envío
+  const hasPending = document.querySelectorAll('.fila-send-btn').length > 0;
+  document.getElementById('dBtnSendAll').style.display = hasPending ? 'inline-flex' : 'none';
 }
 
 function closeDrawer() {
@@ -892,8 +1011,104 @@ document.getElementById('dBtnSaveReal').addEventListener('click', () => {
   save(records);
   renderAll();
   toast('Campo Real actualizado correctamente.','ok');
-  // Refresh drawer with new data
-  openDrawer(activeDrawerId);
+  openDrawer(activeDrawerId, 'edit');
+});
+
+function sendAllFilas(solId) {
+  const records = load();
+  const recIdx = records.findIndex(r => r.id === solId);
+  if (recIdx === -1) return;
+  let n = 0;
+  records[recIdx].filas.forEach(f => {
+    if (getEstado(f) === 'no_solicitado') { f.estado = 'solicitado'; n++; }
+  });
+  if (!n) { toast('No hay líneas pendientes de envío.', 'warn'); return; }
+  save(records);
+  renderAll();
+  openDrawer(solId, 'edit');
+  toast(`Solicitud enviada a proveedores (${n} línea${n !== 1 ? 's' : ''}).`, 'ok');
+}
+
+document.getElementById('dBtnSendAll').addEventListener('click', () => sendAllFilas(activeDrawerId));
+
+function sendFila(solId, gi, lineNum) {
+  const records = load();
+  const recIdx = records.findIndex(r => r.id === solId);
+  if (recIdx === -1) return;
+  records[recIdx].filas[gi].estado = 'solicitado';
+  save(records);
+  renderAll();
+  openDrawer(solId, 'edit');
+  toast(`Línea ${lineNum} enviada al proveedor.`, 'ok');
+}
+
+function acceptFilaReal(solId, gi) {
+  const records = load();
+  const recIdx = records.findIndex(r => r.id === solId);
+  if (recIdx === -1) return;
+  const inp = document.querySelector(`.real-inp[data-global-idx="${gi}"]`);
+  const realVal = inp ? (parseInt(inp.value) || 0) : 0;
+  records[recIdx].filas[gi].real   = realVal;
+  records[recIdx].filas[gi].estado = 'real_aceptado';
+  save(records);
+  renderAll();
+  openDrawer(solId, 'edit');
+  toast('Real aceptado correctamente.', 'ok');
+}
+
+function approveFilaConf(solId, gi) {
+  const records = load();
+  const recIdx = records.findIndex(r => r.id === solId);
+  if (recIdx === -1) return;
+  records[recIdx].filas[gi].estado = 'aprobado_interno';
+  save(records);
+  renderAll();
+  openDrawer(solId, 'edit');
+  toast('Confirmación aprobada correctamente.', 'ok');
+}
+
+let pendingRejectId = null;
+let pendingRejectGI = null;
+
+function openFilaRejectModal(solId, gi, lineNum) {
+  const rec = load().find(r => r.id === solId);
+  if (!rec) return;
+  pendingRejectId = solId;
+  pendingRejectGI = gi;
+  const numStr = String(rec.numero_solicitud || rec.id).padStart(4, '0');
+  document.getElementById('rejectConfNum').textContent = `línea ${lineNum} de SOL-${numStr}`;
+  document.getElementById('rejectConfMotivo').value = '';
+  document.getElementById('modalRejectConf').classList.add('open');
+}
+
+document.getElementById('rejectConfNo').addEventListener('click', () => {
+  document.getElementById('modalRejectConf').classList.remove('open');
+  pendingRejectId = null; pendingRejectGI = null;
+});
+
+document.getElementById('rejectConfSi').addEventListener('click', () => {
+  const motivo = document.getElementById('rejectConfMotivo').value.trim();
+  if (!motivo) { toast('Escribe un motivo para rechazar la confirmación.', 'warn'); return; }
+  const records = load();
+  const recIdx = records.findIndex(r => r.id === pendingRejectId);
+  if (recIdx === -1) return;
+  records[recIdx].filas[pendingRejectGI].estado         = 'rechazado_interno';
+  records[recIdx].filas[pendingRejectGI].motivo_rechazo = motivo;
+  records[recIdx].filas[pendingRejectGI].rechazadoAt    = new Date().toISOString();
+  save(records);
+  document.getElementById('modalRejectConf').classList.remove('open');
+  const solId = pendingRejectId;
+  pendingRejectId = null; pendingRejectGI = null;
+  renderAll();
+  openDrawer(solId, 'edit');
+  toast('Confirmación rechazada. El proveedor deberá volver a confirmar.', 'warn');
+});
+
+document.getElementById('modalRejectConf').addEventListener('click', e => {
+  if (e.target === document.getElementById('modalRejectConf')) {
+    document.getElementById('modalRejectConf').classList.remove('open');
+    pendingRejectId = null; pendingRejectGI = null;
+  }
 });
 
 /* ══ Edit ═════════════════════════════════════════════════════════════ */
@@ -968,7 +1183,7 @@ document.getElementById('cancelSolSi').addEventListener('click', () => {
   const solId = pendingCancelId;
   pendingCancelId = null; pendingCancelGI = null;
   renderAll();
-  openDrawer(solId);
+  openDrawer(solId, 'edit');
   toast('Línea cancelada correctamente.', 'ok');
 });
 
@@ -1025,6 +1240,7 @@ document.addEventListener('keydown', e=>{
   if(e.key==='Escape'){
     document.getElementById('modalDel').classList.remove('open');
     document.getElementById('modalCancelSol').classList.remove('open');
+    document.getElementById('modalRejectConf').classList.remove('open');
     closeDrawer();
   }
 });

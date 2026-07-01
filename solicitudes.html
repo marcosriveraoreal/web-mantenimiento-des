@@ -239,6 +239,8 @@
     .badge-partial::before  { background: var(--info); }
     .badge-confirmed { background: var(--ok-bg); color: var(--ok-d); }
     .badge-confirmed::before { background: var(--ok); }
+    .badge-rejected { background: rgba(205,0,43,.08); color: #cd002b; }
+    .badge-rejected::before { background: #cd002b; }
     .real-input {
       width: 72px; height: 38px; padding: 0 8px;
       border: 1.5px solid var(--border); border-radius: var(--r-md);
@@ -264,6 +266,10 @@
       border-color: var(--ok-d); color: var(--ok-d); cursor: default;
       background: var(--ok-bg); pointer-events: none;
     }
+    .btn-respond--view {
+      border-color: var(--ink-4); color: var(--ink-2);
+    }
+    .btn-respond--view:hover { background: var(--teal-50); border-color: var(--primary); color: var(--primary); box-shadow: none; }
 
     /* ═══ EMPTY STATE ════════════════════════════════════════════════════ */
     .empty-state { text-align: center; padding: 64px 32px; }
@@ -413,6 +419,9 @@
     .conf-input.over  { border-color: #ef4444; background: #fff5f5; box-shadow: 0 0 0 3px rgba(239,68,68,.10); }
     .over-hint { font-size: 10px; color: #dc2626; font-weight: 600; display: none; }
     .over-hint.show { display: block; }
+    .rechazado-note { font-size: 10.5px; color: #cd002b; background: rgba(205,0,43,.06); border: 1px solid rgba(205,0,43,.15); border-radius: 5px; padding: 4px 8px; line-height: 1.4; text-align: left; max-width: 140px; margin-bottom: 4px; }
+    .conf-input--rejected { border-color: rgba(205,0,43,.4); }
+    .conf-input--rejected:focus { border-color: #cd002b; box-shadow: 0 0 0 3px rgba(205,0,43,.10); }
 
     /* ═══ MODAL FOOTER ═══════════════════════════════════════════════════ */
     .modal-footer {
@@ -642,9 +651,9 @@
     <div class="modal-header">
       <div class="modal-header__top">
         <div>
-          <div class="modal-header__badge">
-            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4z"/></svg>
-            Formulario de respuesta
+          <div class="modal-header__badge" id="modalBadge">
+            <svg id="modalBadgeIcon" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4z"/></svg>
+            <span id="modalBadgeText">Formulario de respuesta</span>
           </div>
           <h2 class="modal-header__title" id="modalTitle">SOL-0001</h2>
         </div>
@@ -658,7 +667,7 @@
     </div>
 
     <div class="modal-body">
-      <div class="info-callout">
+      <div class="info-callout" id="infoCallout">
         <div class="info-callout__icon">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
@@ -683,7 +692,7 @@
               <th>Categoría</th>
               <th style="text-align:center">Sol.</th>
               <th style="text-align:center">Conf.</th>
-              <th style="text-align:center">Real</th>
+              <th style="text-align:center">Estado</th>
             </tr>
           </thead>
           <tbody id="modalLines"></tbody>
@@ -751,16 +760,25 @@ const myFilas  = rec => (rec.filas || []).filter(f => f.suministrador === COMPAN
 const totalSol = arr => arr.reduce((a, f) => a + (f.solicitado || 0), 0);
 const totalCon = arr => arr.reduce((a, f) => a + (f.contrata   || 0), 0);
 
+function getEstado(f) {
+  if (f.cancelada) return 'cancelada';
+  if (f.estado) return f.estado;
+  // backwards-compat: derive from existing data
+  if ((f.real || 0) > 0) return 'real_aceptado';
+  if ((f.contrata || 0) > 0) return 'confirmado_externo';
+  return 'solicitado'; // legacy data treated as already sent
+}
+
 function status(filas) {
-  const sol = totalSol(filas), con = totalCon(filas);
-  if (con === 0)        return 'pending';
-  if (con >= sol)       return 'confirmed';
-  return 'partial';
+  const active = filas.filter(f => !f.cancelada);
+  if (!active.length) return 'confirmed';
+  if (active.some(f => getEstado(f) === 'solicitado')) return 'pending';
+  return 'confirmed';
 }
 
 const STATUS_MAP = {
-  pending:   ['badge-pending',   'Pendiente'],
-  partial:   ['badge-partial',   'Parcial'],
+  pending:   ['badge-pending',   'Pendiente respuesta'],
+  rejected:  ['badge-rejected',  'Requiere atención'],
   confirmed: ['badge-confirmed', 'Confirmada'],
 };
 
@@ -781,15 +799,19 @@ let activeRecId  = null;
 /* ══ Render ════════════════════════════════════════════════════════════ */
 function getRows() {
   return load()
-    .map(r => ({ r, filas: myFilas(r) }))
+    .map(r => ({ r, filas: myFilas(r).filter(f => getEstado(f) !== 'no_solicitado') }))
     .filter(({ filas }) => filas.length > 0);
 }
 
 function renderStats(rows) {
-  const counts = { all: rows.length, pending: 0, partial: 0, confirmed: 0 };
-  rows.forEach(({ filas }) => counts[status(filas)]++);
+  const counts = { all: rows.length, pending: 0, confirmed: 0 };
+  rows.forEach(({ filas }) => {
+    const s = status(filas);
+    if (s === 'pending' || s === 'rejected') counts.pending++;
+    else if (s === 'confirmed') counts.confirmed++;
+  });
   document.getElementById('stat-all').textContent       = counts.all;
-  document.getElementById('stat-pending').textContent   = counts.pending + counts.partial;
+  document.getElementById('stat-pending').textContent   = counts.pending;
   document.getElementById('stat-confirmed').textContent = counts.confirmed;
 }
 
@@ -798,7 +820,6 @@ function applyFilters(rows) {
     const s = status(filas);
     const matchFilter =
       activeFilter === 'all' ? true :
-      activeFilter === 'pending' ? (s === 'pending' || s === 'partial') :
       s === activeFilter;
     const numStr = String(r.numero_solicitud || r.id).padStart(4, '0');
     const matchSearch = !activeSearch || numStr.includes(activeSearch.replace(/\D/g, ''));
@@ -862,16 +883,12 @@ function renderTable() {
       </td>
       <td><span class="badge ${badgeCls}">${badgeTxt}</span></td>
       <td style="text-align:center; padding-right:22px">
-        ${st === 'confirmed'
-          ? `<button class="btn-respond btn-respond--done" disabled>
-               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="12" height="12"><polyline points="20 6 9 17 4 12"/></svg>
-               Confirmada
-             </button>`
-          : `<button class="btn-respond" data-id="${r.id}">
-               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4z"/></svg>
-               Responder
-             </button>`
-        }
+        <button class="btn-respond${st === 'confirmed' ? ' btn-respond--view' : ''}" data-id="${r.id}">
+          ${st === 'confirmed'
+            ? `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="12" height="12"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg> Ver detalle`
+            : `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="12" height="12"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4z"/></svg> Responder`
+          }
+        </button>
       </td>
     </tr>`;
   }).join('');
@@ -903,10 +920,45 @@ function openModal(id) {
   if (!rec) return;
 
   activeRecId = id;
-  const filas = myFilas(rec);
+  const filas = (rec.filas || [])
+    .map((f, gi) => ({ ...f, _gi: gi }))
+    .filter(f => f.suministrador === COMPANY && getEstado(f) !== 'no_solicitado');
   const sol   = totalSol(filas);
   const { main: dateMain } = dateRange(filas);
   const numStr = String(rec.numero_solicitud || rec.id).padStart(4, '0');
+
+  const hasEditable = filas.some(f => getEstado(f) === 'solicitado');
+
+  // Update modal badge
+  document.getElementById('modalBadgeText').textContent = hasEditable ? 'Formulario de respuesta' : 'Detalle de solicitud';
+
+  // Update info callout
+  const callout = document.getElementById('infoCallout');
+  if (hasEditable) {
+    callout.innerHTML = `
+      <div class="info-callout__icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+        </svg>
+      </div>
+      <div>
+        <p class="info-callout__title">Confirma el personal disponible</p>
+        <p class="info-callout__text">Introduce cuántas personas podéis enviar en cada línea. El valor confirmado no puede superar el número solicitado por Atalaya Mining.</p>
+      </div>`;
+    callout.style.cssText = '';
+  } else {
+    callout.innerHTML = `
+      <div class="info-callout__icon" style="background:rgba(27,167,119,.10);color:#0d6b4a">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>
+        </svg>
+      </div>
+      <div>
+        <p class="info-callout__title" style="color:#0d6b4a">Solicitud confirmada</p>
+        <p class="info-callout__text">Has confirmado el personal disponible para esta solicitud. Puedes consultar el detalle aquí. Atalaya Mining revisará los datos confirmados.</p>
+      </div>`;
+    callout.style.cssText = 'display:flex;gap:12px;align-items:flex-start;background:rgba(27,167,119,.04);border:1px solid rgba(27,167,119,.12);border-left:3px solid #0d6b4a;border-radius:var(--r-md);padding:12px 16px;margin-bottom:20px;';
+  }
 
   document.getElementById('modalTitle').textContent = `SOL-${numStr}`;
 
@@ -926,8 +978,17 @@ function openModal(id) {
     </div>`
   ).join('');
 
-  document.getElementById('modalLines').innerHTML = filas.map((f, i) =>
-    `<tr data-idx="${i}">
+  document.getElementById('modalLines').innerHTML = filas.map((f, i) => {
+    const estado = getEstado(f);
+    const canEdit = estado === 'solicitado';
+    const estadoBadge = {
+      confirmado_externo: '<span style="font-size:10px;font-weight:700;color:#005c83;background:rgba(0,159,227,.12);padding:2px 8px;border-radius:10px;white-space:nowrap">✓ Confirmado</span>',
+      aprobado_interno:   '<span style="font-size:10px;font-weight:700;color:#0d6b4a;background:rgba(27,167,119,.12);padding:2px 8px;border-radius:10px;white-space:nowrap">✓ Aprobado</span>',
+      real_aceptado:      '<span style="font-size:10px;font-weight:700;color:#0d6b4a;background:rgba(27,167,119,.12);padding:2px 8px;border-radius:10px;white-space:nowrap">✓ Aceptado</span>',
+      rechazado_interno:  '<span style="font-size:10px;font-weight:700;color:#cd002b;background:rgba(205,0,43,.08);padding:2px 8px;border-radius:10px;white-space:nowrap">✕ Rechazado</span>',
+      cancelada:          '<span style="font-size:10px;font-weight:700;color:#cd002b;background:rgba(205,0,43,.08);padding:2px 8px;border-radius:10px;white-space:nowrap">✕ Cancelada</span>',
+    }[estado] || '';
+    return `<tr data-idx="${i}" style="${!canEdit ? 'opacity:.75' : ''}">
       <td><span class="line-num">${i + 1}</span></td>
       <td><span class="line-date">${fmt(f.fecha)}</span></td>
       <td><span class="line-turno">${f.turno || '—'}</span></td>
@@ -935,21 +996,19 @@ function openModal(id) {
       <td><span class="line-cat">${f.categoria || '—'}</span></td>
       <td class="sol-cell">${f.solicitado || 0}</td>
       <td style="text-align:center">
-        <div class="conf-wrap">
-          <input class="conf-input" type="number" min="0" max="${f.solicitado || 0}"
-            value="${f.contrata || 0}"
-            data-max="${f.solicitado || 0}"
-            data-idx="${i}" />
-          <span class="over-hint" id="hint-${i}">Excede lo solicitado</span>
-        </div>
+        ${canEdit ? `<div class="conf-wrap">
+            <input class="conf-input" type="number" min="0" max="${f.solicitado || 0}"
+              value="${f.contrata || 0}"
+              data-max="${f.solicitado || 0}"
+              data-idx="${i}" data-gi="${f._gi}" />
+            <span class="over-hint" id="hint-${i}">Excede lo solicitado</span>
+          </div>` : `<span style="font-size:14px;font-weight:700;color:var(--ink-2)">${f.contrata || 0}</span>`}
       </td>
-      <td style="text-align:center">
-        <input class="real-input" type="number" min="0"
-          value="${f.real || 0}"
-          data-idx="${i}" />
-      </td>
-    </tr>`
-  ).join('');
+      <td style="text-align:center">${estadoBadge}</td>
+    </tr>`;
+  }).join('');
+
+  document.getElementById('btnSave').style.display = hasEditable ? 'inline-flex' : 'none';
 
   document.querySelectorAll('.conf-input').forEach(inp =>
     inp.addEventListener('input', () => { validateInput(inp); updateFooter(); })
@@ -957,7 +1016,7 @@ function openModal(id) {
 
   updateFooter();
   document.getElementById('modalOverlay').classList.add('open');
-  document.getElementById('modalLines').querySelector('.conf-input')?.focus();
+  if (hasEditable) document.getElementById('modalLines').querySelector('.conf-input')?.focus();
 }
 
 function validateInput(inp) {
@@ -991,14 +1050,11 @@ function saveModal() {
   const recIdx  = records.findIndex(r => r.id === activeRecId);
   if (recIdx === -1) return;
 
-  let lineIdx = 0;
-  records[recIdx].filas.forEach(f => {
-    if (f.suministrador !== COMPANY) return;
-    const inp  = document.querySelector(`.conf-input[data-idx="${lineIdx}"]`);
-    const rInp = document.querySelector(`.real-input[data-idx="${lineIdx}"]`);
-    if (inp)  f.contrata = parseInt(inp.value)  || 0;
-    if (rInp) f.real     = parseInt(rInp.value) || 0;
-    lineIdx++;
+  document.querySelectorAll('.conf-input').forEach(inp => {
+    const gi = parseInt(inp.dataset.gi);
+    if (isNaN(gi) || !records[recIdx].filas[gi]) return;
+    records[recIdx].filas[gi].contrata = parseInt(inp.value) || 0;
+    records[recIdx].filas[gi].estado   = 'confirmado_externo';
   });
 
   save(records);
