@@ -1,0 +1,862 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Atalaya · Nueva solicitud maquinaria auxiliar</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --p:#194447; --pl:#1f555a; --pd:#0f2e30;
+  --ac:#eb953f; --ac-h:#d4832e; --ac-l:rgba(235,149,63,.12);
+  --bg:#f0f2f3; --su:#f7f8f7;
+  --bd:rgba(25,68,71,.14); --bd-l:rgba(25,68,71,.09); --bd-xl:rgba(25,68,71,.05);
+  --tx:#1a1a1a; --mu:#6b6e72; --li:#a0a3a8; --xl:#c8cacc;
+  --ok:#1BA777; --ok-bg:rgba(27,167,119,.10);
+  --er:#cd002b; --er-bg:rgba(205,0,43,.08);
+  --wa:#ffab2d; --wa-d:#7a4f00; --wa-bg:rgba(255,171,45,.11);
+  --shadow-sm:0 1px 3px rgba(15,23,42,.05),0 1px 2px rgba(15,23,42,.03);
+  --shadow-md:0 4px 14px rgba(15,23,42,.08),0 1px 4px rgba(15,23,42,.04);
+  --shadow-lg:0 16px 40px rgba(15,23,42,.13),0 4px 12px rgba(15,23,42,.06);
+  --r:10px; --r-sm:6px;
+}
+
+body { font-family:'Segoe UI',-apple-system,BlinkMacSystemFont,Arial,sans-serif; font-size:13px; color:var(--tx); background:var(--bg); display:flex; height:100vh; overflow:hidden; -webkit-font-smoothing:antialiased; }
+
+/* ── SIDEBAR ─────────────────────────────────────────────────────── */
+.sidebar { width:210px; min-width:210px; background:var(--p); color:#d4dde0; display:flex; flex-direction:column; overflow-y:auto; border-right:1px solid rgba(0,0,0,.06); }
+.sidebar::-webkit-scrollbar { width:4px; }
+.sidebar::-webkit-scrollbar-thumb { background:rgba(255,255,255,.08); border-radius:3px; }
+.sb-brand { padding:17px 17px 13px; display:flex; align-items:center; gap:10px; border-bottom:1px solid rgba(255,255,255,.07); }
+.sb-logo { width:30px; height:30px; flex-shrink:0; display:flex; align-items:center; justify-content:center; }
+.sb-logo svg { width:30px; height:30px; }
+.sb-name { font-size:13px; font-weight:700; color:#fff; letter-spacing:.02em; line-height:1.2; }
+.sb-name small { display:block; font-size:9px; font-weight:500; color:#8aa3a8; letter-spacing:.14em; text-transform:uppercase; margin-top:2px; }
+
+.cal-card { margin:14px 12px 0; background:rgba(0,0,0,.12); border-radius:9px; padding:11px 10px 7px; border:1px solid rgba(255,255,255,.05); }
+.cal-nav { display:flex; align-items:center; justify-content:space-between; margin-bottom:9px; }
+.cal-nav button { width:24px; height:24px; border-radius:5px; background:rgba(255,255,255,.06); border:none; color:#b8c4c7; cursor:pointer; font-size:14px; display:flex; align-items:center; justify-content:center; transition:all .12s; }
+.cal-nav button:hover { background:var(--ac); color:#fff; }
+.cal-nav .cal-label { font-size:11.5px; font-weight:700; color:#fff; text-transform:capitalize; }
+.cal-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:1px; }
+.cal-grid .dh { text-align:center; font-size:8.5px; font-weight:700; color:#6b8389; padding:3px 0 4px; letter-spacing:.06em; }
+.cal-grid .d { text-align:center; font-size:11px; border-radius:5px; cursor:pointer; color:#a8b8bb; transition:all .12s; user-select:none; height:23px; display:flex; align-items:center; justify-content:center; position:relative; }
+.cal-grid .d:hover { background:rgba(255,255,255,.08); color:#fff; }
+.cal-grid .d.om { color:#3d5559; cursor:default; }
+.cal-grid .d.om:hover { background:transparent; }
+.cal-grid .d.today { box-shadow:inset 0 0 0 1.5px var(--ac); color:#fff; font-weight:700; }
+.cal-grid .d.hd::after { content:''; position:absolute; bottom:2px; left:50%; width:4px; height:4px; border-radius:50%; background:var(--ac); transform:translateX(-50%); }
+.cal-grid .d.sel { background:var(--ac); color:#fff; font-weight:700; }
+.btn-hoy { display:block; margin:7px 12px 13px; background:var(--ac); color:#fff; border:none; border-radius:6px; padding:8px 0; font-size:11px; font-weight:700; letter-spacing:.06em; cursor:pointer; text-align:center; width:calc(100% - 24px); transition:all .15s; }
+.btn-hoy:hover { background:var(--ac-h); }
+.nav-sec { padding:8px 0 12px; border-top:1px solid rgba(255,255,255,.07); }
+.nav-lbl { padding:10px 18px 5px; font-size:9px; font-weight:700; color:#6b8389; text-transform:uppercase; letter-spacing:.12em; }
+.nav-it { padding:8px 18px 8px 28px; cursor:pointer; color:#b8c4c7; font-size:12.5px; font-weight:500; border-left:3px solid transparent; display:flex; align-items:center; gap:9px; transition:all .12s; }
+.nav-it:hover { background:rgba(255,255,255,.04); color:#fff; }
+.nav-it.active { background:var(--ac-l); color:#fff; font-weight:700; border-left-color:var(--ac); }
+.nav-it .dot { width:5px; height:5px; border-radius:50%; background:currentColor; opacity:.5; flex-shrink:0; }
+.nav-it .badge { margin-left:auto; background:var(--ac); color:#fff; font-size:9px; font-weight:800; padding:2px 6px; border-radius:8px; min-width:18px; text-align:center; }
+
+/* ── MAIN ────────────────────────────────────────────────────────── */
+.main { flex:1; display:flex; flex-direction:column; overflow:hidden; min-width:0; }
+.topbar { background:#fff; border-bottom:1px solid var(--bd-l); padding:0 22px; height:52px; display:flex; align-items:center; gap:10px; color:var(--mu); font-size:12px; flex-shrink:0; }
+.crumb { color:var(--li); }
+.crumb-cur { color:var(--tx); font-weight:600; }
+.crumb-sep { color:var(--xl); margin:0 5px; }
+.spacer { flex:1; }
+.tb-actions { display:flex; align-items:center; gap:8px; }
+.btn { display:inline-flex; align-items:center; gap:6px; height:34px; padding:0 14px; font-size:12px; font-weight:600; font-family:inherit; border-radius:7px; cursor:pointer; border:none; transition:all .15s; white-space:nowrap; }
+.btn svg { width:13px; height:13px; fill:none; stroke:currentColor; stroke-width:1.8; flex-shrink:0; }
+.btn-gh { background:var(--su); color:var(--mu); border:0.5px solid rgba(25,68,71,.15); }
+.btn-gh:hover { background:#ebeeee; color:var(--tx); }
+.btn-add { display:inline-flex; align-items:center; gap:7px; height:34px; padding:0 16px; background:var(--ac); color:#fff; font-size:12.5px; font-weight:700; font-family:inherit; border:none; border-radius:7px; cursor:pointer; transition:all .15s; }
+.btn-add svg { width:13px; height:13px; fill:none; stroke:#fff; stroke-width:2.2; flex-shrink:0; }
+.btn-add:hover { background:var(--ac-h); box-shadow:0 4px 10px rgba(235,149,63,.3); }
+.uavatar { width:34px; height:34px; border-radius:50%; background:var(--p); color:#fff; display:flex; align-items:center; justify-content:center; font-size:11.5px; font-weight:700; margin-left:4px; border:2px solid #fff; box-shadow:0 0 0 1px var(--bd-l); }
+
+.content { flex:1; overflow-y:auto; background:var(--bg); }
+.content::-webkit-scrollbar { width:6px; }
+.content::-webkit-scrollbar-thumb { background:var(--bd); border-radius:3px; }
+.inner { padding:20px 24px 40px; }
+
+/* ── PAGE HEADER ─────────────────────────────────────────────────── */
+.ph { display:flex; align-items:center; justify-content:space-between; background:#fff; border-radius:var(--r); border:0.5px solid var(--bd-l); padding:16px 20px; margin-bottom:12px; box-shadow:var(--shadow-sm); }
+.ph-l { display:flex; align-items:center; gap:14px; }
+.ph-icon { width:42px; height:42px; border-radius:10px; background:var(--ac-l); color:var(--ac); display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+.ph-icon svg { width:21px; height:21px; fill:none; stroke:currentColor; stroke-width:1.7; }
+.ph-eyebrow { font-size:10px; font-weight:700; letter-spacing:.14em; text-transform:uppercase; color:var(--li); margin-bottom:3px; }
+.ph-title { font-size:18px; font-weight:800; color:var(--tx); letter-spacing:-.2px; }
+.ph-sub { font-size:12px; color:var(--mu); margin-top:2px; }
+.ph-r { display:flex; align-items:center; gap:10px; }
+.num-pill { display:inline-flex; align-items:center; gap:8px; background:rgba(25,68,71,.06); border:0.5px solid var(--bd-l); color:var(--p); padding:8px 14px; border-radius:8px; font-size:12px; font-weight:600; }
+.num-pill strong { font-size:16px; font-weight:800; }
+.num-pill svg { width:13px; height:13px; fill:none; stroke:currentColor; stroke-width:1.8; }
+.num-pill a { color:var(--p); text-decoration:none; font-weight:700; border-left:1px solid var(--bd); padding-left:10px; margin-left:4px; display:inline-flex; align-items:center; gap:4px; font-size:12px; }
+.num-pill a:hover { color:var(--ac); }
+.num-pill a svg { width:11px; height:11px; }
+
+/* ── CALLOUT ─────────────────────────────────────────────────────── */
+.callout { display:flex; gap:12px; align-items:flex-start; background:rgba(25,68,71,.04); border:0.5px solid rgba(25,68,71,.12); border-left:3px solid var(--p); border-radius:8px; padding:11px 16px; margin-bottom:12px; }
+.callout .co-icon { width:28px; height:28px; border-radius:7px; background:rgba(25,68,71,.10); color:var(--p); display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+.callout .co-icon svg { width:14px; height:14px; fill:none; stroke:currentColor; stroke-width:1.8; }
+.callout .co-title { font-size:12px; font-weight:700; color:var(--p); margin-bottom:2px; }
+.callout .co-text { font-size:12px; color:var(--mu); line-height:1.5; }
+.callout .co-text strong { color:var(--p); font-weight:700; }
+.callout.warn { background:var(--wa-bg); border-color:rgba(255,171,45,.35); border-left-color:var(--wa); }
+.callout.warn .co-icon { background:rgba(255,171,45,.15); color:var(--wa-d); }
+.callout.warn .co-title { color:var(--wa-d); }
+
+/* ── CARD ────────────────────────────────────────────────────────── */
+.card { background:#fff; border-radius:var(--r); border:0.5px solid var(--bd-l); margin-bottom:12px; box-shadow:var(--shadow-sm); overflow:hidden; }
+.card-hd { display:flex; align-items:center; justify-content:space-between; padding:13px 18px; border-bottom:1px solid var(--bd-l); background:rgba(25,68,71,.02); }
+.card-hd-l { display:flex; align-items:center; gap:10px; }
+.card-hd-icon { width:30px; height:30px; border-radius:7px; background:rgba(25,68,71,.08); color:var(--p); display:flex; align-items:center; justify-content:center; }
+.card-hd-icon svg { width:14px; height:14px; fill:none; stroke:currentColor; stroke-width:1.8; }
+.card-title { font-size:13.5px; font-weight:700; color:var(--tx); }
+.card-sub { font-size:11.5px; color:var(--mu); margin-top:1px; }
+.card-body { padding:18px 20px; }
+.general-grid { display:grid; grid-template-columns:200px 1fr; gap:16px; align-items:start; }
+
+/* ── FORM FIELDS ─────────────────────────────────────────────────── */
+.fg { display:flex; flex-direction:column; gap:5px; }
+.fl { font-size:11px; font-weight:600; color:var(--mu); letter-spacing:.01em; display:flex; align-items:center; gap:5px; }
+.fl .req { color:var(--ac); font-size:13px; font-weight:700; }
+.fl .opt { font-size:9px; color:var(--li); font-weight:500; text-transform:uppercase; letter-spacing:.08em; margin-left:2px; }
+.fi { width:100%; height:36px; padding:0 11px; background:var(--su); color:var(--tx); border:1px solid rgba(25,68,71,.18); border-radius:var(--r-sm); font-size:13px; font-family:inherit; outline:none; transition:border-color .15s,box-shadow .15s,background .15s; }
+.fi::placeholder { color:var(--xl); }
+.fi:hover { background:#fff; border-color:var(--li); }
+.fi:focus { border-color:var(--p); background:#fff; box-shadow:0 0 0 3px rgba(25,68,71,.08); }
+.fi.err { border-color:var(--er) !important; background:#fff8f8; }
+.fsel { width:100%; height:36px; padding:0 28px 0 11px; background:var(--su); color:var(--tx); border:1px solid rgba(25,68,71,.18); border-radius:var(--r-sm); font-size:13px; font-family:inherit; outline:none; appearance:none; cursor:pointer; background-image:url("data:image/svg+xml,%3Csvg width='10' height='10' viewBox='0 0 12 12' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M2 4l4 4 4-4' stroke='%236b6e72' stroke-width='1.4' stroke-linecap='round'/%3E%3C/svg%3E"); background-repeat:no-repeat; background-position:right 10px center; transition:border-color .15s,box-shadow .15s,background .15s; }
+.fsel:hover { background-color:#fff; border-color:var(--li); }
+.fsel:focus { border-color:var(--p); background-color:#fff; box-shadow:0 0 0 3px rgba(25,68,71,.08); }
+.fsel.err { border-color:var(--er) !important; }
+.fta { width:100%; padding:9px 11px; min-height:64px; background:var(--su); color:var(--tx); border:1px solid rgba(25,68,71,.18); border-radius:var(--r-sm); font-size:13px; font-family:inherit; outline:none; resize:vertical; transition:border-color .15s,box-shadow .15s,background .15s; }
+.fta::placeholder { color:var(--xl); }
+.fta:hover { background:#fff; border-color:var(--li); }
+.fta:focus { border-color:var(--p); background:#fff; box-shadow:0 0 0 3px rgba(25,68,71,.08); }
+
+/* ── LINES SECTION ───────────────────────────────────────────────── */
+.lines-card { background:#fff; border-radius:var(--r); border:0.5px solid var(--bd-l); box-shadow:var(--shadow-sm); overflow:hidden; margin-bottom:12px; }
+.lines-hd { display:flex; align-items:center; gap:8px; padding:13px 18px; border-bottom:1px solid var(--bd-l); background:rgba(25,68,71,.02); }
+.lines-hd-l { display:flex; align-items:center; gap:10px; flex:1; }
+.lines-actions { display:flex; align-items:center; gap:7px; }
+.btn-sm { display:inline-flex; align-items:center; gap:5px; height:30px; padding:0 11px; font-size:12px; font-weight:600; font-family:inherit; border-radius:var(--r-sm); cursor:pointer; border:none; transition:all .15s; white-space:nowrap; }
+.btn-sm svg { width:12px; height:12px; fill:none; stroke:currentColor; stroke-width:1.8; }
+.btn-sm-gh { background:var(--su); color:var(--mu); border:0.5px solid rgba(25,68,71,.15); }
+.btn-sm-gh:hover { background:#ebeeee; color:var(--tx); }
+.btn-sm-add { background:var(--ac); color:#fff; }
+.btn-sm-add svg { stroke:#fff; }
+.btn-sm-add:hover { background:var(--ac-h); box-shadow:0 3px 8px rgba(235,149,63,.28); }
+.lines-body { padding:12px 14px; display:flex; flex-direction:column; gap:8px; min-height:60px; }
+.empty-card { text-align:center; padding:32px 22px; color:var(--li); font-size:13px; background:var(--su); border-radius:8px; border:0.5px dashed var(--bd); }
+.empty-card .ec-icon { width:44px; height:44px; border-radius:10px; background:rgba(25,68,71,.07); color:var(--li); display:flex; align-items:center; justify-content:center; margin:0 auto 12px; }
+.empty-card .ec-icon svg { width:20px; height:20px; fill:none; stroke:currentColor; stroke-width:1.5; }
+.empty-card strong { color:var(--p); }
+.lines-ft { display:flex; align-items:center; justify-content:space-between; padding:10px 18px; background:var(--su); border-top:1px solid var(--bd-l); }
+.lines-ft-l { font-size:12px; color:var(--mu); display:flex; align-items:center; gap:6px; }
+.lines-ft-l .dot { width:6px; height:6px; border-radius:50%; background:var(--ok); flex-shrink:0; }
+.lines-ft-l strong { color:var(--p); font-weight:700; }
+
+/* ── ROW CARD ────────────────────────────────────────────────────── */
+.row-card { border:1px solid var(--bd-l); border-radius:9px; background:#fff; overflow:hidden; transition:box-shadow .15s,border-color .15s; }
+.row-card:hover { box-shadow:var(--shadow-md); }
+.rc-hdr { display:flex; align-items:center; gap:8px; padding:8px 13px; background:rgba(25,68,71,.03); border-bottom:1px solid var(--bd-xl); }
+.rc-num { width:22px; height:22px; border-radius:5px; flex-shrink:0; background:var(--p); color:#fff; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:800; }
+.rc-tags { display:flex; align-items:center; gap:5px; flex:1; flex-wrap:wrap; }
+.rc-tag { padding:2px 8px; border-radius:10px; font-size:11px; font-weight:600; background:rgba(25,68,71,.08); color:var(--p); white-space:nowrap; }
+.rc-tag.empty { color:var(--xl); background:transparent; font-style:italic; font-weight:400; }
+.rc-tag.zona-tag { background:var(--p); color:#fff; font-size:10.5px; }
+.rc-del { width:26px; height:26px; border-radius:5px; border:0.5px solid var(--bd-l); background:transparent; flex-shrink:0; display:flex; align-items:center; justify-content:center; cursor:pointer; transition:all .12s; }
+.rc-del:hover { background:var(--er); border-color:var(--er); }
+.rc-del:hover svg { stroke:#fff; }
+.rc-del svg { width:12px; height:12px; fill:none; stroke:var(--mu); stroke-width:1.8; transition:stroke .12s; }
+
+/* Row body */
+.rc-body { padding:13px 14px; display:flex; flex-direction:column; gap:10px; }
+.rc-r1 { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; }
+.rc-r2 { display:grid; grid-template-columns:1.4fr 1fr 1fr 0.7fr 1fr; gap:10px; }
+.rc-r3 { display:grid; grid-template-columns:1.4fr 0.65fr 0.65fr 0.7fr 1fr; gap:10px; }
+.rc-r4 { display:grid; grid-template-columns:1fr 1fr 1fr 0.65fr 0.65fr; gap:10px; }
+
+/* ── PAGE FOOTER ─────────────────────────────────────────────────── */
+.page-footer { display:flex; justify-content:space-between; align-items:center; background:#fff; border:0.5px solid var(--bd-l); border-radius:var(--r); padding:13px 20px; box-shadow:var(--shadow-sm); }
+.pf-info { font-size:12px; color:var(--mu); display:flex; align-items:center; gap:6px; }
+.pf-info svg { width:13px; height:13px; fill:none; stroke:currentColor; stroke-width:1.6; }
+.pf-actions { display:flex; gap:10px; align-items:center; }
+.btn-lg { display:inline-flex; align-items:center; gap:8px; height:40px; padding:0 20px; border-radius:8px; font-size:13px; font-weight:700; font-family:inherit; cursor:pointer; border:none; transition:all .15s; white-space:nowrap; }
+.btn-lg svg { width:15px; height:15px; fill:none; stroke:currentColor; stroke-width:2; }
+.btn-lg-ghost { background:var(--su); color:var(--mu); border:0.5px solid var(--bd); }
+.btn-lg-ghost:hover { background:#ebeeee; color:var(--tx); }
+.btn-lg-save { background:var(--ac); color:#fff; }
+.btn-lg-save svg { stroke:#fff; }
+.btn-lg-save:hover { background:var(--ac-h); box-shadow:0 4px 12px rgba(235,149,63,.32); transform:translateY(-1px); }
+.btn-lg-save:active { transform:translateY(0); }
+
+/* ── MODALS ──────────────────────────────────────────────────────── */
+.modal-overlay { position:fixed; inset:0; background:rgba(15,23,42,.42); display:flex; align-items:center; justify-content:center; z-index:200; opacity:0; pointer-events:none; transition:opacity .2s; backdrop-filter:blur(3px); }
+.modal-overlay.open { opacity:1; pointer-events:auto; }
+.modal { background:#fff; border-radius:13px; width:92%; max-width:460px; box-shadow:var(--shadow-lg); transform:translateY(-12px) scale(.97); transition:transform .22s cubic-bezier(.16,1,.3,1); border:0.5px solid var(--bd-l); overflow:hidden; }
+.modal-overlay.open .modal { transform:translateY(0) scale(1); }
+.modal-head { padding:20px 22px 10px; display:flex; gap:12px; align-items:flex-start; }
+.mi { width:38px; height:38px; border-radius:9px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+.mi svg { width:19px; height:19px; fill:none; stroke:currentColor; stroke-width:1.8; }
+.mi-warn { background:var(--wa-bg); color:var(--wa-d); }
+.mi-save { background:rgba(25,68,71,.08); color:var(--p); }
+.modal-head h2 { font-size:16px; font-weight:700; color:var(--tx); margin-bottom:4px; }
+.modal-head p { font-size:12.5px; color:var(--mu); line-height:1.5; }
+.modal-head p strong { color:var(--tx); font-weight:700; }
+.modal-body { padding:4px 22px 18px; }
+.modal-summary { background:var(--su); border:0.5px solid var(--bd-l); border-radius:8px; padding:12px 16px; margin-top:8px; display:grid; grid-template-columns:repeat(3,1fr); gap:12px; }
+.ms-item { display:flex; flex-direction:column; gap:3px; }
+.ms-lbl { font-size:9px; font-weight:700; text-transform:uppercase; letter-spacing:.08em; color:var(--li); }
+.ms-val { font-size:14px; font-weight:800; color:var(--p); }
+.modal-foot { padding:13px 22px; background:var(--su); border-top:0.5px solid var(--bd-l); display:flex; justify-content:flex-end; gap:8px; }
+.btn-modal { display:inline-flex; align-items:center; gap:6px; height:36px; padding:0 16px; border-radius:7px; font-size:12.5px; font-weight:600; font-family:inherit; cursor:pointer; transition:all .15s; border:none; }
+.btn-modal svg { width:13px; height:13px; fill:none; stroke:currentColor; stroke-width:1.8; }
+.btn-modal-ghost { background:var(--su); color:var(--mu); border:0.5px solid var(--bd); }
+.btn-modal-ghost:hover { background:#ebeeee; color:var(--tx); }
+.btn-modal-p { background:var(--p); color:#fff; }
+.btn-modal-p:hover { background:var(--pl); }
+.btn-modal-save { background:var(--ac); color:#fff; }
+.btn-modal-save svg { stroke:#fff; }
+.btn-modal-save:hover { background:var(--ac-h); box-shadow:0 4px 10px rgba(235,149,63,.3); }
+
+/* ── TOAST ───────────────────────────────────────────────────────── */
+.toast { position:fixed; bottom:24px; right:24px; background:#fff; color:var(--tx); padding:11px 16px; border-radius:9px; font-size:13px; font-weight:500; box-shadow:var(--shadow-lg); opacity:0; transform:translateY(10px) scale(.97); transition:opacity .22s,transform .22s; z-index:300; border:0.5px solid var(--bd-l); border-left:3px solid var(--ok); display:flex; align-items:center; gap:10px; min-width:280px; pointer-events:none; }
+.toast.show { opacity:1; transform:translateY(0) scale(1); }
+.toast.error { border-left-color:var(--er); }
+.toast.warn  { border-left-color:var(--wa); }
+.toast .ti { width:26px; height:26px; border-radius:6px; background:var(--ok-bg); color:var(--ok); display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+.toast.error .ti { background:var(--er-bg); color:var(--er); }
+.toast.warn  .ti { background:var(--wa-bg); color:var(--wa-d); }
+.toast .ti svg { width:14px; height:14px; fill:none; stroke:currentColor; stroke-width:2; }
+</style>
+</head>
+<body>
+
+<!-- ── SIDEBAR ──────────────────────────────────────────────────────────── -->
+<aside class="sidebar">
+  <div class="sb-brand">
+    <div class="sb-logo">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 50 50">
+        <path d="M23.77,30.47l-8.22,6.82,6.25-1.21,1.96-5.6h.01Z" fill="#fff"/>
+        <path d="M22.82,36.21l4.56,3.17-2.55-8.89-2.01,5.72Z" fill="#fff"/>
+        <path d="M9.14,34.13l4.62,3.32,8.85-7.34-13.48,4.03h0Z" fill="#fff"/>
+        <path d="M25.81,30.45l2.7,9.38,5.41-1.33-8.1-8.04h-.01Z" fill="#fff"/>
+        <path d="M26.65,29.89l8.36,8.3,5.61-4.16-13.96-4.13h-.01Z" fill="#fff"/>
+        <path d="M24.3,10.18l-15.35,22.87,15.35-4.58V10.18Z" fill="#fff"/>
+        <path d="M25.63,28.46l15.42,4.56-15.42-22.85s0,18.29,0,18.29Z" fill="#fff"/>
+      </svg>
+    </div>
+    <div class="sb-name">Atalaya<small>Mantenimiento</small></div>
+  </div>
+
+  <div class="cal-card">
+    <div class="cal-nav">
+      <button id="cal-prev">‹</button>
+      <span class="cal-label" id="cal-label"></span>
+      <button id="cal-next">›</button>
+    </div>
+    <div class="cal-grid" id="cal-grid"></div>
+  </div>
+  <button class="btn-hoy" id="btn-hoy">HOY</button>
+
+  <div class="nav-sec">
+    <div class="nav-lbl">Solicitudes</div>
+    <div class="nav-it" onclick="location.href='tabla_solicitudes.html'">
+      <span class="dot"></span>Solicitud personal
+      <span class="badge" id="sb-count-personal">0</span>
+    </div>
+    <div class="nav-it active" onclick="location.href='tabla_generadores.html'">
+      <span class="dot"></span>Solicitud maquinaria auxiliar
+      <span class="badge" id="sb-count-gen">0</span>
+    </div>
+    <div class="nav-it" onclick="location.href='tabla_camiones.html'">
+      <span class="dot"></span>Camiones y grúas
+      <span class="badge" id="sb-count">0</span>
+    </div>
+  </div>
+</aside>
+
+<!-- ── MAIN ─────────────────────────────────────────────────────────────── -->
+<div class="main">
+  <div class="topbar">
+    <span class="crumb">Mantenimiento</span><span class="crumb-sep">/</span>
+    <span class="crumb">Solicitud maquinaria auxiliar</span><span class="crumb-sep">/</span>
+    <span class="crumb-cur">Nuevo registro</span>
+    <span class="spacer"></span>
+    <div class="tb-actions">
+      <button class="btn btn-gh" id="btn-cancelar">
+        <svg viewBox="0 0 16 16"><line x1="3" y1="3" x2="13" y2="13"/><line x1="13" y1="3" x2="3" y2="13"/></svg>
+        Cancelar
+      </button>
+      <button class="btn-add" id="btn-guardar">
+        <svg viewBox="0 0 16 16"><path d="M3 8l4 4 6-6"/></svg>
+        Guardar registro
+      </button>
+      <div class="uavatar">CR</div>
+    </div>
+  </div>
+
+  <div class="content">
+    <div class="inner">
+
+      <!-- Page header -->
+      <div class="ph">
+        <div class="ph-l">
+          <div class="ph-icon">
+            <svg viewBox="0 0 24 24"><path d="M13 2L4 14h7l-1 8 9-12h-7l1-8z"/></svg>
+          </div>
+          <div>
+            <div class="ph-eyebrow">Solicitud maquinaria auxiliar</div>
+            <div class="ph-title">Nuevo registro</div>
+            <div class="ph-sub">Registra la solicitud de maquinaria auxiliar por empresa y zona</div>
+          </div>
+        </div>
+        <div class="ph-r">
+          <div class="num-pill">
+            <svg viewBox="0 0 16 16"><rect x="2" y="3" width="12" height="11" rx="1.5"/><path d="M2 7h12M6 3v11"/></svg>
+            <strong id="records-count">0</strong> guardados
+            <a href="tabla_generadores.html">
+              <svg viewBox="0 0 16 16"><path d="M6 3l5 5-5 5"/></svg>
+              Ver tabla
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Warning callout -->
+      <div class="callout warn">
+        <div class="co-icon">
+          <svg viewBox="0 0 16 16"><path d="M8 2L1.5 13h13z"/><path d="M8 6v4M8 11.5v.1"/></svg>
+        </div>
+        <div class="co-body">
+          <div class="co-title">Pendiente de definición</div>
+          <div class="co-text">Los <strong>tipos de maquinaria</strong> y los <strong>campos específicos para cada tipo</strong> están pendientes de recibir por parte de Tutor. Este formulario se completará con esa información en una próxima versión.</div>
+        </div>
+      </div>
+
+      <!-- Info callout -->
+      <div class="callout">
+        <div class="co-icon">
+          <svg viewBox="0 0 16 16"><circle cx="8" cy="8" r="6.5"/><path d="M8 5v3.5M8 11.2v.1"/></svg>
+        </div>
+        <div class="co-body">
+          <div class="co-title">Campos obligatorios y opcionales</div>
+          <div class="co-text">Solo son obligatorios <strong>Empresa, Zona y Día solicitado</strong>. La potencia solicitada es opcional. Los campos <strong>Día entrega, Día baja, Día recogida, Gasoil salida, Potencia entregada y Nº de equipo</strong> se completan posteriormente desde la tabla.</div>
+        </div>
+      </div>
+
+      <!-- Datos generales -->
+      <div class="card">
+        <div class="card-hd">
+          <div class="card-hd-l">
+            <div class="card-hd-icon">
+              <svg viewBox="0 0 16 16"><rect x="2" y="3" width="12" height="11" rx="1.5"/><path d="M2 6h12M5 1.5v3M11 1.5v3"/></svg>
+            </div>
+            <div>
+              <div class="card-title">Datos generales</div>
+              <div class="card-sub">Fecha de creación y observaciones globales del registro</div>
+            </div>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="general-grid">
+            <div class="fg">
+              <label class="fl" for="fecha">Fecha del registro <span class="req">*</span></label>
+              <input class="fi" type="date" id="fecha">
+            </div>
+            <div class="fg">
+              <label class="fl" for="obs-generales">Observaciones generales <span class="opt">opcional</span></label>
+              <textarea class="fta" id="obs-generales" placeholder="Comentarios globales, instrucciones o contexto para este registro…" rows="2"></textarea>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Líneas -->
+      <div class="lines-card">
+        <div class="lines-hd">
+          <div class="lines-hd-l">
+            <div class="card-hd-icon">
+              <svg viewBox="0 0 16 16"><rect x="2" y="2" width="12" height="12" rx="1.5"/><path d="M2 6h12M2 10h12M6 2v12"/></svg>
+            </div>
+            <div>
+              <div class="card-title">Líneas de equipos</div>
+              <div class="card-sub">Una línea por cada equipo o máquina solicitada</div>
+            </div>
+          </div>
+          <div class="lines-actions">
+            <button class="btn-sm btn-sm-add" id="btn-add-row">
+              <svg viewBox="0 0 16 16"><line x1="8" y1="3" x2="8" y2="13"/><line x1="3" y1="8" x2="13" y2="8"/></svg>
+              Añadir línea
+            </button>
+          </div>
+        </div>
+
+        <div class="lines-body" id="filas-body"></div>
+
+        <div class="lines-ft">
+          <div class="lines-ft-l">
+            <span class="dot"></span>
+            Total líneas: <strong id="row-count">0</strong>
+          </div>
+          <button class="btn-sm btn-sm-gh" id="btn-clear-rows">
+            <svg viewBox="0 0 16 16"><path d="M3 5h10M6 5V3h4v2M5 5l1 9h4l1-9"/></svg>
+            Limpiar todo
+          </button>
+        </div>
+      </div>
+
+      <!-- Page footer -->
+      <div class="page-footer">
+        <div class="pf-info">
+          <svg viewBox="0 0 16 16"><circle cx="8" cy="8" r="6.5"/><path d="M8 5v3.5M8 11.2v.1"/></svg>
+          Los campos con <span style="color:var(--ac);font-weight:700;margin:0 2px;">*</span> son obligatorios.
+        </div>
+        <div class="pf-actions">
+          <button class="btn-lg btn-lg-ghost" id="btn-cancelar-2">Cancelar</button>
+          <button class="btn-lg btn-lg-save" id="btn-guardar-2">
+            <svg viewBox="0 0 16 16"><path d="M3 8l4 4 6-6"/></svg>
+            Guardar registro
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ── MODAL CANCELAR ───────────────────────────────────────────────────── -->
+<div class="modal-overlay" id="modal-cancelar">
+  <div class="modal">
+    <div class="modal-head">
+      <div class="mi mi-warn">
+        <svg viewBox="0 0 24 24"><path d="M10.3 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+      </div>
+      <div>
+        <h2>¿Cancelar registro?</h2>
+        <p>Se perderán todos los datos no guardados. Esta acción <strong>no se puede deshacer</strong>.</p>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn-modal btn-modal-ghost" id="modal-no">Volver</button>
+      <button class="btn-modal btn-modal-p" id="modal-si">Sí, cancelar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── MODAL GUARDAR ────────────────────────────────────────────────────── -->
+<div class="modal-overlay" id="modal-guardar">
+  <div class="modal">
+    <div class="modal-head">
+      <div class="mi mi-save">
+        <svg viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+      </div>
+      <div>
+        <h2>Guardar registro</h2>
+        <p>Revisa el resumen antes de guardar la solicitud de maquinaria auxiliar.</p>
+      </div>
+    </div>
+    <div class="modal-body">
+      <div class="modal-summary">
+        <div class="ms-item"><span class="ms-lbl">Fecha</span><span class="ms-val" id="mg-fecha">—</span></div>
+        <div class="ms-item"><span class="ms-lbl">Líneas</span><span class="ms-val" id="mg-n">0</span></div>
+        <div class="ms-item"><span class="ms-lbl">Pot. solicitada</span><span class="ms-val" id="mg-kw">0 kW</span></div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn-modal btn-modal-ghost" id="modal-guardar-no">Volver</button>
+      <button class="btn-modal btn-modal-save" id="modal-guardar-si">
+        <svg viewBox="0 0 16 16"><path d="M3 8l4 4 6-6"/></svg>
+        Confirmar y guardar
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast">
+  <div class="ti"><svg viewBox="0 0 16 16"><path d="M3 8l4 4 6-6"/></svg></div>
+  <div id="toast-msg">Acción completada</div>
+</div>
+
+<script>
+const EMPRESAS = ['Royman','Mimese','Insersa','Ventura','Castrosur','Umaco','Nervion','SyL','CSD'];
+const ZONAS    = ['Trituración','Molienda','Taller','Almacén','Cargadero'];
+const LS_KEY   = 'sdi_generadores';
+const MESES_SHORT = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+const DS = ['LU','MA','MI','JU','VI','SA','DO'];
+
+let calYear, calMonth;
+
+function loadRecords(){ try{ return JSON.parse(localStorage.getItem(LS_KEY)||'[]'); }catch{ return []; } }
+function saveRecord(data){
+  const recs = loadRecords();
+  recs.push({id:Date.now(), createdAt:new Date().toISOString(), ...data});
+  localStorage.setItem(LS_KEY, JSON.stringify(recs));
+}
+function updateCounts(){
+  document.getElementById('records-count').textContent = loadRecords().length;
+  document.getElementById('sb-count-gen').textContent  = loadRecords().length;
+  try{ document.getElementById('sb-count-personal').textContent=(JSON.parse(localStorage.getItem('sdi_solicitudes')||'[]')).length; }catch{}
+  try{ document.getElementById('sb-count').textContent=(JSON.parse(localStorage.getItem('sdi_camiones')||'[]')).length; }catch{}
+}
+function toKey(d){ return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; }
+
+/* ── Calendar ──────────────────────────────────────────────────────── */
+function initCal(){ const n=new Date(); calYear=n.getFullYear(); calMonth=n.getMonth(); renderCal(); }
+function renderCal(){
+  document.getElementById('cal-label').textContent=`${MESES_SHORT[calMonth]} ${calYear}`;
+  const today=new Date(), first=new Date(calYear,calMonth,1);
+  let dow=first.getDay(); dow=dow===0?6:dow-1;
+  const dim=new Date(calYear,calMonth+1,0).getDate();
+  const dateCount={};
+  loadRecords().forEach(r=>{ if(r.fecha) dateCount[r.fecha]=(dateCount[r.fecha]||0)+1; });
+  const curFecha=document.getElementById('fecha').value;
+  let html=DS.map(d=>`<div class="dh">${d}</div>`).join('');
+  const prevDim=new Date(calYear,calMonth,0).getDate();
+  for(let i=0;i<dow;i++) html+=`<div class="d om">${prevDim-dow+i+1}</div>`;
+  for(let d=1;d<=dim;d++){
+    const t=d===today.getDate()&&calMonth===today.getMonth()&&calYear===today.getFullYear();
+    const key=`${calYear}-${String(calMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const hd=dateCount[key], sel=curFecha===key;
+    html+=`<div class="d${t?' today':''}${hd?' hd':''}${sel?' sel':''}" data-key="${key}" title="${hd?hd+' registro'+(hd!==1?'s':''):''}">${d}</div>`;
+  }
+  const rem=Math.ceil((dow+dim)/7)*7-(dow+dim);
+  for(let i=1;i<=rem;i++) html+=`<div class="d om">${i}</div>`;
+  document.getElementById('cal-grid').innerHTML=html;
+  document.getElementById('cal-grid').querySelectorAll('.d:not(.om)').forEach(el=>{
+    el.addEventListener('click',()=>{ document.getElementById('fecha').value=el.dataset.key; renderCal(); });
+  });
+}
+document.getElementById('cal-prev').addEventListener('click',()=>{ calMonth--; if(calMonth<0){calMonth=11;calYear--;} renderCal(); });
+document.getElementById('cal-next').addEventListener('click',()=>{ calMonth++; if(calMonth>11){calMonth=0;calYear++;} renderCal(); });
+document.getElementById('btn-hoy').addEventListener('click',()=>{ const n=new Date(); calYear=n.getFullYear(); calMonth=n.getMonth(); document.getElementById('fecha').value=toKey(n); renderCal(); });
+document.getElementById('fecha').addEventListener('change',()=>{ const v=document.getElementById('fecha').value; if(v){const d=new Date(v+'T12:00');calYear=d.getFullYear();calMonth=d.getMonth();} renderCal(); });
+initCal();
+
+/* ── Rows ──────────────────────────────────────────────────────────── */
+let rowId=0;
+
+function mkSelHTML(opts, ph, field){
+  let h=`<select class="fsel" data-field="${field}"><option value="" disabled selected>${ph}</option>`;
+  opts.forEach(o=>h+=`<option value="${o}">${o}</option>`);
+  return h+'</select>';
+}
+
+function addRow(vals=null){
+  const container=document.getElementById('filas-body');
+  container.querySelector('.empty-card')?.remove();
+  const id=++rowId;
+  const n=container.querySelectorAll('.row-card').length+1;
+  const v=vals||{};
+
+  const card=document.createElement('div');
+  card.className='row-card';
+  card.dataset.id=String(id);
+
+  card.innerHTML=`
+    <div class="rc-hdr">
+      <span class="rc-num">${n}</span>
+      <div class="rc-tags">
+        <span class="rc-tag rc-empresa empty">Sin empresa</span>
+        <span class="rc-tag rc-dia empty">Sin fecha</span>
+        <span class="rc-tag rc-zona zona-tag" style="display:none"></span>
+      </div>
+      <button type="button" class="rc-del" title="Eliminar línea">
+        <svg viewBox="0 0 16 16"><path d="M3 5h10M6 5V3h4v2M5 5l1 9h4l1-9"/></svg>
+      </button>
+    </div>
+    <div class="rc-body">
+
+      <div class="rc-r1">
+        <div class="fg">
+          <label class="fl">Empresa <span class="req">*</span></label>
+          ${mkSelHTML(EMPRESAS,'— Empresa —','empresa')}
+        </div>
+        <div class="fg">
+          <label class="fl">Zona <span class="req">*</span></label>
+          ${mkSelHTML(ZONAS,'— Zona —','zona')}
+        </div>
+        <div class="fg">
+          <label class="fl">Día solicitado <span class="req">*</span></label>
+          <input type="date" class="fi" data-field="dia_solicitado" value="${v.dia_solicitado||''}">
+        </div>
+        <div class="fg">
+          <label class="fl">Pot. solicitada <span class="opt">kW · opt.</span></label>
+          <input type="number" class="fi" min="0" placeholder="—" data-field="potencia_solicitada" value="${v.potencia_solicitada||''}">
+        </div>
+      </div>
+
+      <div class="rc-r2">
+        <div class="fg">
+          <label class="fl">Medios propios</label>
+          <select class="fsel" data-field="medios_propios">
+            <option value="" disabled selected>—</option>
+            <option value="si">Sí</option>
+            <option value="no">No</option>
+            <option value="carga">Carga</option>
+            <option value="descarga">Descarga</option>
+            <option value="carga_descarga">Carga y desc.</option>
+          </select>
+        </div>
+        <div class="fg">
+          <label class="fl">Nº eq. fabricante</label>
+          <input type="text" class="fi" placeholder="Nº fabricante" data-field="n_equipo_fabricante" value="${v.n_equipo_fabricante||''}">
+        </div>
+        <div class="fg">
+          <label class="fl">Nº eq. Atalaya</label>
+          <input type="text" class="fi" placeholder="Nº Atalaya" data-field="n_equipo_atalaya" value="${v.n_equipo_atalaya||''}">
+        </div>
+        <div class="fg">
+          <label class="fl">Gasoil E</label>
+          <input type="number" class="fi" min="0" value="${v.gasoil_entrada??0}" data-field="gasoil_entrada" style="text-align:center;">
+        </div>
+        <div class="fg">
+          <label class="fl">Telf. contacto</label>
+          <input type="tel" class="fi" placeholder="000 000 000" data-field="telefono" value="${v.telefono||''}">
+        </div>
+      </div>
+
+      <div class="rc-r3">
+        <div class="fg">
+          <label class="fl">OT / SC</label>
+          <input type="text" class="fi" placeholder="OT o SC" data-field="ot_sc" value="${v.ot_sc||''}">
+        </div>
+        <div class="fg">
+          <label class="fl">Extintor</label>
+          <select class="fsel" data-field="extintor">
+            <option value="" disabled selected>—</option>
+            <option value="si">Sí</option>
+            <option value="no">No</option>
+          </select>
+        </div>
+        <div class="fg">
+          <label class="fl">Picatierra</label>
+          <select class="fsel" data-field="picatierra">
+            <option value="" disabled selected>—</option>
+            <option value="si">Sí</option>
+            <option value="no">No</option>
+          </select>
+        </div>
+        <div class="fg">
+          <label class="fl">Gasoil S</label>
+          <input type="number" class="fi" min="0" placeholder="—" data-field="gasoil_salida" value="${v.gasoil_salida||''}" style="text-align:center;">
+        </div>
+        <div class="fg">
+          <label class="fl">Telf. técnico</label>
+          <input type="tel" class="fi" placeholder="000 000 000" data-field="telefono_tecnico" value="${v.telefono_tecnico||''}">
+        </div>
+      </div>
+
+      <div class="rc-r4">
+        <div class="fg">
+          <label class="fl">Día entrega</label>
+          <input type="date" class="fi" data-field="dia_entrega" value="${v.dia_entrega||''}">
+        </div>
+        <div class="fg">
+          <label class="fl">Día baja</label>
+          <input type="date" class="fi" data-field="dia_baja" value="${v.dia_baja||''}">
+        </div>
+        <div class="fg">
+          <label class="fl">Día recogida</label>
+          <input type="date" class="fi" data-field="dia_recogida" value="${v.dia_recogida||''}">
+        </div>
+        <div class="fg">
+          <label class="fl">Estim. h/día</label>
+          <input type="number" class="fi" min="0" step="0.5" placeholder="h" data-field="estim_horas_dia" value="${v.estim_horas_dia||''}" style="text-align:center;">
+        </div>
+        <div class="fg">
+          <label class="fl">Pot. entregada <span class="opt">kW</span></label>
+          <input type="number" class="fi" min="0" placeholder="—" data-field="potencia_entregada" value="${v.potencia_entregada||''}" style="text-align:center;">
+        </div>
+      </div>
+
+    </div>`;
+
+  /* Pre-fill selects */
+  const get=f=>card.querySelector(`[data-field="${f}"]`);
+  if(v.empresa)        get('empresa').value=v.empresa;
+  if(v.zona)           get('zona').value=v.zona;
+  if(v.medios_propios) get('medios_propios').value=v.medios_propios;
+  if(v.extintor)       get('extintor').value=v.extintor;
+  if(v.picatierra)     get('picatierra').value=v.picatierra;
+
+  /* Auto-fill dia_solicitado from global fecha if empty */
+  const formFecha=document.getElementById('fecha').value;
+  if(!v.dia_solicitado && formFecha) get('dia_solicitado').value=formFecha;
+
+  /* Live header tags */
+  const tagEmpresa=card.querySelector('.rc-empresa');
+  const tagDia    =card.querySelector('.rc-dia');
+  const tagZona   =card.querySelector('.rc-zona');
+  const empSel    =get('empresa');
+  const zonaSel   =get('zona');
+  const diaInp    =get('dia_solicitado');
+
+  function refreshTags(){
+    const emp=empSel.value, zona=zonaSel.value, dia=diaInp.value;
+    tagEmpresa.textContent=emp||'Sin empresa';
+    tagEmpresa.classList.toggle('empty',!emp);
+    if(dia){
+      tagDia.textContent=new Date(dia+'T12:00').toLocaleDateString('es-ES',{day:'numeric',month:'short'});
+      tagDia.classList.remove('empty');
+    } else {
+      tagDia.textContent='Sin fecha';
+      tagDia.classList.add('empty');
+    }
+    if(zona){ tagZona.textContent=zona; tagZona.style.display=''; }
+    else     { tagZona.style.display='none'; }
+  }
+  empSel.addEventListener('change',refreshTags);
+  zonaSel.addEventListener('change',refreshTags);
+  diaInp.addEventListener('change',refreshTags);
+  refreshTags();
+
+  /* Delete */
+  card.querySelector('.rc-del').addEventListener('click',()=>{ card.remove(); checkEmpty(); updateRowCount(); renumberRows(); });
+
+  container.appendChild(card);
+  updateRowCount(); renumberRows();
+}
+
+function renumberRows(){
+  document.querySelectorAll('#filas-body .row-card').forEach((c,i)=>{ c.querySelector('.rc-num').textContent=i+1; });
+}
+
+function checkEmpty(){
+  const c=document.getElementById('filas-body');
+  if(!c.querySelectorAll('.row-card').length){
+    c.innerHTML=`<div class="empty-card">
+      <div class="ec-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></div>
+      No hay líneas. Pulsa <strong>+ Añadir línea</strong> para comenzar.
+    </div>`;
+  }
+}
+
+function updateRowCount(){
+  document.getElementById('row-count').textContent=document.querySelectorAll('#filas-body .row-card').length;
+}
+
+document.getElementById('btn-add-row').addEventListener('click',()=>addRow());
+document.getElementById('btn-clear-rows').addEventListener('click',()=>{
+  const n=document.querySelectorAll('#filas-body .row-card').length;
+  if(!n){ showToast('No hay líneas que limpiar.','warn'); return; }
+  if(!confirm(`¿Eliminar las ${n} líneas?`)) return;
+  document.getElementById('filas-body').innerHTML='';
+  checkEmpty(); updateRowCount();
+});
+addRow();
+
+/* ── Collect ───────────────────────────────────────────────────────── */
+function collectData(){
+  const fecha=document.getElementById('fecha').value;
+  const obsGen=document.getElementById('obs-generales').value;
+  const filas=[];
+  document.querySelectorAll('#filas-body .row-card').forEach(card=>{
+    const get=f=>card.querySelector(`[data-field="${f}"]`);
+    filas.push({
+      empresa:            get('empresa').value,
+      potencia_solicitada:parseInt(get('potencia_solicitada').value)||0,
+      medios_propios:     get('medios_propios').value,
+      n_equipo_fabricante:get('n_equipo_fabricante').value,
+      n_equipo_atalaya:   get('n_equipo_atalaya').value,
+      gasoil_entrada:     parseInt(get('gasoil_entrada').value)||0,
+      gasoil_salida:      parseInt(get('gasoil_salida').value)||0,
+      ot_sc:              get('ot_sc').value,
+      telefono:           get('telefono').value,
+      extintor:           get('extintor').value,
+      picatierra:         get('picatierra').value,
+      dia_solicitado:     get('dia_solicitado').value,
+      dia_entrega:        get('dia_entrega').value,
+      dia_baja:           get('dia_baja').value,
+      dia_recogida:       get('dia_recogida').value,
+      estim_horas_dia:    parseFloat(get('estim_horas_dia').value)||0,
+      zona:               get('zona').value,
+      potencia_entregada: parseInt(get('potencia_entregada').value)||0,
+      telefono_tecnico:   get('telefono_tecnico').value,
+    });
+  });
+  return {fecha, observaciones_generales:obsGen, filas};
+}
+
+/* ── Validate ──────────────────────────────────────────────────────── */
+function clearErrors(){ document.querySelectorAll('.err').forEach(e=>e.classList.remove('err')); }
+function validate(){
+  clearErrors();
+  const f=document.getElementById('fecha');
+  if(!f.value){ f.classList.add('err'); showToast('Introduce la fecha del registro antes de guardar.','warn'); f.focus(); return false; }
+  const cards=document.querySelectorAll('#filas-body .row-card');
+  if(!cards.length){ showToast('Añade al menos una línea.','warn'); return false; }
+  let invalid=0;
+  cards.forEach(card=>{
+    const get=f=>card.querySelector(`[data-field="${f}"]`);
+    const emp=get('empresa');   if(!emp.value)  { emp.classList.add('err');  invalid++; }
+    const zon=get('zona');      if(!zon.value)  { zon.classList.add('err');  invalid++; }
+    const dia=get('dia_solicitado'); if(!dia.value){ dia.classList.add('err'); invalid++; }
+  });
+  if(invalid){ showToast(`Faltan ${invalid} campo${invalid!==1?'s':''} obligatorio${invalid!==1?'s':''} (Empresa, Zona, Día solicitado).`,'error'); return false; }
+  return true;
+}
+
+/* ── Toast ─────────────────────────────────────────────────────────── */
+let toastT;
+function showToast(msg, type='ok', d=3200){
+  const t=document.getElementById('toast');
+  t.classList.remove('error','warn');
+  if(type==='error') t.classList.add('error');
+  else if(type==='warn') t.classList.add('warn');
+  const icon=type==='ok'?'<path d="M3 8l4 4 6-6"/>':type==='warn'?'<line x1="8" y1="3" x2="8" y2="10"/><circle cx="8" cy="12.5" r=".7" fill="currentColor"/>':'<line x1="3" y1="3" x2="13" y2="13"/><line x1="13" y1="3" x2="3" y2="13"/>';
+  t.querySelector('.ti svg').innerHTML=icon;
+  document.getElementById('toast-msg').textContent=msg;
+  t.classList.add('show');
+  clearTimeout(toastT);
+  toastT=setTimeout(()=>t.classList.remove('show'),d);
+}
+
+/* ── Modals ────────────────────────────────────────────────────────── */
+function openCancelar(){ document.getElementById('modal-cancelar').classList.add('open'); }
+document.getElementById('btn-cancelar').addEventListener('click',openCancelar);
+document.getElementById('btn-cancelar-2').addEventListener('click',openCancelar);
+document.getElementById('modal-no').addEventListener('click',()=>document.getElementById('modal-cancelar').classList.remove('open'));
+document.getElementById('modal-si').addEventListener('click',()=>{ document.getElementById('modal-cancelar').classList.remove('open'); resetForm(); showToast('Formulario reiniciado.','ok'); });
+
+function openGuardar(){
+  if(!validate()) return;
+  const data=collectData();
+  document.getElementById('mg-n').textContent=data.filas.length;
+  const kw=data.filas.reduce((a,r)=>a+(r.potencia_solicitada||0),0);
+  document.getElementById('mg-kw').textContent=kw+' kW';
+  document.getElementById('mg-fecha').textContent=data.fecha?new Date(data.fecha+'T12:00').toLocaleDateString('es-ES',{day:'numeric',month:'short',year:'numeric'}):'—';
+  document.getElementById('modal-guardar').classList.add('open');
+}
+document.getElementById('btn-guardar').addEventListener('click',openGuardar);
+document.getElementById('btn-guardar-2').addEventListener('click',openGuardar);
+document.getElementById('modal-guardar-no').addEventListener('click',()=>document.getElementById('modal-guardar').classList.remove('open'));
+document.getElementById('modal-guardar-si').addEventListener('click',()=>{
+  document.getElementById('modal-guardar').classList.remove('open');
+  saveRecord(collectData()); updateCounts();
+  showToast('Registro guardado. Abriendo tabla…','ok',2000);
+  setTimeout(()=>{ location.href='tabla_generadores.html'; },1100);
+});
+
+function resetForm(){
+  clearErrors();
+  document.getElementById('fecha').value='';
+  document.getElementById('obs-generales').value='';
+  document.getElementById('filas-body').innerHTML='';
+  addRow(); renderCal();
+}
+
+document.querySelectorAll('.modal-overlay').forEach(o=>o.addEventListener('click',e=>{ if(e.target===o) o.classList.remove('open'); }));
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape') document.querySelectorAll('.modal-overlay.open').forEach(o=>o.classList.remove('open'));
+  if((e.ctrlKey||e.metaKey)&&e.key==='s'){ e.preventDefault(); openGuardar(); }
+});
+
+updateCounts();
+</script>
+</body>
+</html>

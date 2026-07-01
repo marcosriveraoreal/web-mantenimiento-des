@@ -1,28 +1,29 @@
 # Bocetos Mantenimiento — Atalaya Mining
 
-Prototipos HTML/CSS/JS estáticos para el sistema de gestión de solicitudes de personal de mantenimiento. Sin framework, sin build step, sin servidor — todo funciona abriéndolo directamente en el navegador.
+Prototipos HTML/CSS/JS estáticos para el sistema de gestión de solicitudes de personal y maquinaria auxiliar de mantenimiento. Sin framework, sin build step, sin servidor — todo funciona abriéndolo directamente en el navegador.
 
 ## Arquitectura
 
-Dos aplicaciones independientes que comparten el mismo `localStorage`:
+Dos módulos independientes que comparten el mismo navegador/localStorage:
 
-| App | Archivo(s) | Acceso |
-|-----|-----------|--------|
+| Módulo | Archivo(s) | Acceso |
+|--------|-----------|--------|
 | **Portal externo** (proveedores) | `login.html` → `portal.html` → `solicitudes.html` | Suministradores |
-| **App interna** (staff Atalaya) | `solicitud_personal.html` ↔ `tabla_solicitudes.html` | Equipo interno |
+| **Solicitud personal** (staff) | `solicitud_personal.html` ↔ `tabla_solicitudes.html` | Equipo interno |
+| **Maquinaria auxiliar** (staff) | `solicitud_generadores.html` ↔ `tabla_generadores.html` | Equipo interno |
 
 ## Persistencia
 
 | Clave | Contenido |
 |-------|-----------|
-| `localStorage["sdi_solicitudes"]` | Array de solicitudes (shared entre las dos apps) |
-| `localStorage["sdi_edit_id"]` | ID de la solicitud que se va a editar (string) — lo escribe `tabla_solicitudes.html` y lo consume y borra `solicitud_personal.html` |
+| `localStorage["sdi_solicitudes"]` | Array de solicitudes de personal (shared entre app interna y portal externo) |
+| `localStorage["sdi_edit_id"]` | ID de la solicitud a editar — lo escribe `tabla_solicitudes.html` y lo consume y borra `solicitud_personal.html` |
+| `localStorage["sdi_generadores"]` | Array de registros de maquinaria auxiliar |
 | `sessionStorage["atalaya_session"]` | Sesión del portal externo: `{ username, company }` |
 
-## Modelo de datos
+## Modelo de datos — Solicitud de personal
 
 ```js
-// Solicitud
 {
   id: Number,                    // Date.now()
   numero_solicitud: String,      // "0001"
@@ -37,70 +38,109 @@ Dos aplicaciones independientes que comparten el mismo `localStorage`:
       zona: String,
       solicitado: Number,
       contrata: Number,          // lo rellena el proveedor desde el portal
-      real: Number,              // lo rellena el staff interno (solo si aprobado_interno)
+      real: Number,              // lo rellena el staff (solo si aprobado_interno)
       observaciones: String,
       adjunto: String|null,
-      estado: String,            // ver máquina de estados más abajo
-      // si la línea está rechazada internamente:
+      estado: String,
       motivo_rechazo: String,
-      rechazadoAt: String,       // ISO date
-      // si la línea está cancelada:
+      rechazadoAt: String,
       cancelada: true,
       motivo_cancelacion: String,
-      canceladaAt: String,       // ISO date
+      canceladaAt: String,
     }
   ]
 }
 ```
 
-## Máquina de estados de fila (`estado`)
+## Modelo de datos — Maquinaria auxiliar
+
+```js
+{
+  id: Number,                     // Date.now()
+  createdAt: String,              // ISO date
+  fecha: String,                  // "YYYY-MM-DD" — fecha del registro
+  observaciones_generales: String,
+  filas: [
+    {
+      empresa: String,            // uno de EMPRESAS
+      zona: String,               // uno de ZONAS
+      dia_solicitado: String,     // "YYYY-MM-DD"
+      potencia_solicitada: Number, // kW (opcional)
+      medios_propios: String,     // 'si'|'no'|'carga'|'descarga'|'carga_descarga'
+      n_equipo_fabricante: String,
+      n_equipo_atalaya: String,
+      gasoil_entrada: Number,
+      gasoil_salida: Number,      // se completa tras entrega
+      ot_sc: String,
+      telefono: String,
+      extintor: String,           // 'si'|'no'
+      picatierra: String,         // 'si'|'no'
+      telefono_tecnico: String,
+      dia_entrega: String,        // "YYYY-MM-DD" — se completa tras entrega
+      dia_baja: String,           // "YYYY-MM-DD"
+      dia_recogida: String,       // "YYYY-MM-DD" — cierra el ciclo
+      estim_horas_dia: Number,
+      potencia_entregada: Number, // kW — se completa tras entrega
+    }
+  ]
+}
+```
+
+## Estados de línea — Maquinaria auxiliar (`lineStatus`)
 
 ```
-no_solicitado
-    │ (staff envía la línea)
-    ▼
-solicitado
-    │ (proveedor confirma desde portal externo)
-    ▼
-confirmado_externo
-    │ (staff aprueba)           │ (staff rechaza con motivo)
-    ▼                           ▼
-aprobado_interno         rechazado_interno
-    │                           │
-    │ (rechazo es definitivo)   │ (proveedor no puede re-confirmar)
-    │
-    │ (staff guarda campo Real)
-    ▼
-real_aceptado
-
-En cualquier estado (excepto cancelada):
-    → cancelada  (staff cancela la línea con motivo)
+pending   → sin dia_entrega
+partial   → tiene dia_entrega pero no dia_recogida
+completed → tiene dia_recogida
 ```
 
-La función `getEstado(f)` en `tabla_solicitudes.html` y `solicitudes.html` deriva el estado:
-- Si `f.cancelada` → `'cancelada'`
-- Si `f.estado` existe → usa ese valor
-- Si `f.real > 0` → `'real_aceptado'` (legacy)
-- Si `f.contrata > 0` → `'confirmado_externo'` (legacy)
-- En otro caso → `'solicitado'`
+`globalStatus(rec)` agrega los estados de todas las filas:
+- todas `completed` → `completed`
+- alguna `partial` o `completed` → `partial`
+- resto → `pending`
 
-## Flujo principal
+## Máquina de estados — Solicitud de personal (`estado`)
 
-1. **Staff** crea solicitud en `solicitud_personal.html` → se guarda en `sdi_solicitudes`
-2. **Staff** envía líneas a proveedores desde `tabla_solicitudes.html` (botón "Enviar a proveedores" o por línea)
-3. **Proveedor** entra al portal (`login.html`), ve sus solicitudes en `solicitudes.html` y rellena el campo **Confirmado** (nº personas disponibles)
-4. **Staff** revisa en `tabla_solicitudes.html`: aprueba (`aprobado_interno`) o rechaza con motivo (`rechazado_interno`) cada línea confirmada
-   - Si rechaza, el rechazo es **definitivo** — el proveedor lo ve en lectura, no puede re-confirmar
-5. **Staff** rellena el campo **Real** solo en las líneas `aprobado_interno`
+```
+no_solicitado → solicitado → confirmado_externo → aprobado_interno → real_aceptado
+                                               ↘ rechazado_interno (definitivo)
+En cualquier estado → cancelada
+```
+
+`getEstado(f)` en `tabla_solicitudes.html` y `solicitudes.html`:
+- `f.cancelada` → `'cancelada'`
+- `f.estado` existe → usa ese valor
+- `f.real > 0` → `'real_aceptado'` (legacy)
+- `f.contrata > 0` → `'confirmado_externo'` (legacy)
+- Resto → `'solicitado'`
 
 ## Drawer de `tabla_solicitudes.html`
 
-El drawer se abre en dos modos:
-- **Vista** (`openDrawer(id, 'view')`): solo lectura, sin botones de acción, sin inputs editables. Se activa con el icono ojo (👁) de la tabla.
-- **Edición** (`openDrawer(id, 'edit')`): muestra acciones por línea (Aprobar/Rechazar/Cancelar/Enviar), inputs Real editables (solo en `aprobado_interno`), botón "Guardar Real". Se activa con el icono lápiz (✏) de la tabla.
+- **Vista** (`openDrawer(id, 'view')`): solo lectura, sin inputs editables. Icono ojo (👁).
+- **Edición** (`openDrawer(id, 'edit')`): acciones por línea, inputs Real editables (solo `aprobado_interno`), botón "Guardar Real". Icono lápiz (✏).
 
-## Listas de valores (deben coincidir en todos los archivos)
+## Drawer de `tabla_generadores.html`
 
+Ambos modos usan el mismo layout de cards por línea (una card por fila, 4 filas de grid):
+
+- **Vista** (`openDrawer(id, 'view')`): cards con todos los campos deshabilitados (`disabled`). La fecha y observaciones del registro también aparecen deshabilitadas en la parte superior. El header de cada card muestra el punto de color de empresa + nombre.
+- **Edición** (`openDrawer(id, 'edit')`): mismas cards con todos los campos editables — incluyendo `empresa` (select), `zona` (select), `dia_solicitado`, `potencia_solicitada`, `medios_propios`, `gasoil_entrada`, `telefono`, `ot_sc`, `extintor`, `picatierra`, `telefono_tecnico`, `estim_horas_dia`, `n_equipo_fabricante`, `n_equipo_atalaya`, `gasoil_salida`, `dia_entrega`, `dia_baja`, `dia_recogida`, `potencia_entregada`. También edita `fecha` y `observaciones_generales` del registro.
+
+El guardado recoge todos los campos con `[data-gi][data-field]` + los campos de registro (`edit-fecha`, `edit-obs`).
+
+## Formulario `solicitud_generadores.html`
+
+Layout card-based por línea (igual que `solicitud_personal.html`):
+- **rc-r1**: Empresa *, Zona *, Día solicitado *, Pot. solicitada (opt.)
+- **rc-r2**: Medios propios, Nº eq. fabricante, Nº eq. Atalaya, Gasoil E, Telf. contacto
+- **rc-r3**: OT/SC, Extintor, Picatierra, Gasoil S, Telf. técnico
+- **rc-r4**: Día entrega, Día baja, Día recogida, Est. h/día, Pot. entregada
+
+Live header tags en cada card: empresa, día solicitado (formateado), zona (badge oscuro).
+
+## Listas de valores
+
+### Solicitud de personal (deben coincidir en `solicitud_personal.html`, `tabla_solicitudes.html`, `solicitudes.html`)
 ```js
 const SUMINISTRADORES = ['Insersa', 'Royman', 'Mimese', 'Ventura'];
 const TURNOS   = ['7:00 - 15:00','15:00 - 23:00','23:00 - 7:00','8:00 - 17:00','8:00 - 20:00','20:00 - 8:00'];
@@ -108,7 +148,15 @@ const CATEGORIAS = ['Oficial 1ª','Oficial 2ª','Peón','Categoría 1','Categor�
 const ZONAS    = ['Trituración','Molienda','Taller','Trabaux'];
 ```
 
-Si se añade un proveedor nuevo hay que actualizar esta lista en `solicitud_personal.html`, `tabla_solicitudes.html` y `solicitudes.html` (portal).
+### Maquinaria auxiliar (deben coincidir en `solicitud_generadores.html` y `tabla_generadores.html`)
+```js
+const EMPRESAS = ['Royman','Mimese','Insersa','Ventura','Castrosur','Umaco','Nervion','SyL','CSD'];
+const ZONAS    = ['Trituración','Molienda','Taller','Almacén','Cargadero'];
+const EMP_COLORS = {
+  'Insersa':'#009fe3','Royman':'#eb953f','Mimese':'#1BA777','Ventura':'#8b5cf6',
+  'Castrosur':'#194447','Umaco':'#cd002b','Nervion':'#0891b2','SyL':'#e11d48','CSD':'#6b6e72',
+};
+```
 
 ## Usuarios del portal externo
 
@@ -126,17 +174,19 @@ Credenciales hardcoded en `login.html`. Cada usuario ve solo sus propias solicit
 - **App interna**: sidebar verde oscuro (`--p: #194447`), fondo gris claro, sin framework
 - **Portal externo**: topbar verde (`--primary: #194447`), fondo blanco/teal, diseño más limpio
 - Variables CSS (design tokens) definidas en `:root` de cada archivo — no hay hoja de estilos compartida
-- El isotipo SVG de Atalaya está en `isotipo.svg` e inline en los topbars
+- El isotipo SVG de Atalaya está inline en los sidebars/topbars de todos los archivos
 
 ## Convenciones
 
-- IDs de solicitud: `Date.now()` (número). Comparar siempre con `===` tras convertir con `+` el valor del atributo `data-id`
-- El campo `suministrador` en las filas debe coincidir exactamente (case-sensitive) con `SUMINISTRADORES` — el drawer de `tabla_solicitudes.html` agrupa por ese campo
+- IDs: `Date.now()` (número). Comparar siempre con `===` tras convertir con `+` el atributo `data-id`
+- El campo `suministrador`/`empresa` debe coincidir exactamente (case-sensitive) con sus listas
 - Nada de módulos ES, nada de imports — todo en un único `<script>` al final del `<body>`
-- El toast (`.toast`) tiene `pointer-events: none` siempre — es una notificación sin interactividad, y sin este CSS bloquearía clics en el footer del drawer al estar en posición fixed
+- El toast (`.toast`) tiene `pointer-events: none` siempre — evita que bloquee clics en el footer del drawer
+- `migrateRecords()` en `tabla_generadores.html` normaliza datos legacy al cargar
 
 ## Notas técnicas
 
-- La tabla principal **no** muestra columna de estado global — el estado se gestiona línea a línea en el drawer
-- El campo **Real** solo es editable cuando la línea está en estado `aprobado_interno`
-- El rechazo interno (`rechazado_interno`) es definitivo desde el portal externo: el proveedor lo ve en lectura sin opción de re-confirmar
+- La tabla principal no muestra columna de estado global — el estado se gestiona línea a línea en el drawer
+- El campo **Real** (personal) solo es editable cuando la línea está en `aprobado_interno`
+- El rechazo interno es definitivo: el proveedor lo ve en lectura sin opción de re-confirmar
+- Los campos de entrega de maquinaria (`dia_entrega`, `dia_recogida`, etc.) se pueden editar desde el formulario de creación o desde el drawer de la tabla
